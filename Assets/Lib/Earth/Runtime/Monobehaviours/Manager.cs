@@ -1,3 +1,4 @@
+using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -57,6 +58,21 @@ namespace FunkySheep.Earth
             {
                 x = (int)math.floor((position.x / Manager.Instance.tileSize)),
                 y = (int)math.floor((position.z / Manager.Instance.tileSize))
+            };
+        }
+
+        /// <summary>
+        /// Get the map position given a grid position
+        /// </summary>
+        /// <param name="gridPosition"></param>
+        /// <returns></returns>
+        public static int2 GetMapPosition(int2 gridPosition)
+        {
+            // Reverse the Y axis since the map Y axis is reversed from the unity Y axis
+            return new int2
+            {
+                x = Manager.Instance.mapPosition.x + gridPosition.x,
+                y = Manager.Instance.mapPosition.y - gridPosition.y
             };
         }
     }

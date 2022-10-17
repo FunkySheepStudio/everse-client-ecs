@@ -45,11 +45,13 @@ namespace FunkySheep.Earth.Terrain
         void DownloadHeights()
         {
             string[] variables = new string[3] { "zoom", "position.x", "position.y" };
-            // Reverse the Y axis since the map Y axis is reversed from the unity Y axis
+
+            int2 mapPosition = Earth.Manager.GetMapPosition(gridPosition);
+
             string[] values = new string[3] {
                 Earth.Manager.Instance.zoomLevel.ToString(),
-                (Earth.Manager.Instance.mapPosition.x + gridPosition.x).ToString(),
-                (Earth.Manager.Instance.mapPosition.y - gridPosition.y).ToString()
+                mapPosition.x.ToString(),
+                mapPosition.y.ToString()
             };
 
             string url = manager.heightsUrl.Interpolate(values, variables);
@@ -89,17 +91,21 @@ namespace FunkySheep.Earth.Terrain
 
             terrain.enabled = true;
             heightUpdated = true;
+            if (manager.addedTileEvent)
+                manager.addedTileEvent.Raise(this);
             gameObject.AddComponent<Connector>();
         }
 
         void DownloadDiffuse()
         {
             string[] variables = new string[3] { "zoom", "position.x", "position.y" };
-            // Reverse the Y axis since the map Y axis is reversed from the unity Y axis
+
+            int2 mapPosition = Earth.Manager.GetMapPosition(gridPosition);
+
             string[] values = new string[3] {
                 Earth.Manager.Instance.zoomLevel.ToString(),
-                (Earth.Manager.Instance.mapPosition.x + gridPosition.x).ToString(),
-                (Earth.Manager.Instance.mapPosition.y - gridPosition.y).ToString()
+                mapPosition.x.ToString(),
+                mapPosition.y.ToString()
             };
 
             string url = manager.diffuseUrl.Interpolate(values, variables);

@@ -10,6 +10,7 @@ namespace FunkySheep.Earth.Terrain
         public Material material;
         public FunkySheep.Types.String heightsUrl;
         public FunkySheep.Types.String diffuseUrl;
+        public AddedTileEvent addedTileEvent;
 
         UnityEngine.Terrain terrain;
         List<int2> tiles = new List<int2>();
