@@ -1,6 +1,6 @@
-using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace FunkySheep.Earth.Terrain
 {
@@ -12,6 +12,8 @@ namespace FunkySheep.Earth.Terrain
         public FunkySheep.Types.String diffuseUrl;
 
         UnityEngine.Terrain terrain;
+        List<int2> tiles = new List<int2>();
+
 
         private void Start()
         {
@@ -20,14 +22,18 @@ namespace FunkySheep.Earth.Terrain
 
         public void AddTile(int2 gridPosition)
         {
-            GameObject tileGo = new GameObject();
-            tileGo.SetActive(false);
-            tileGo.name = $"Tile {gridPosition.x} : {gridPosition.y}";
-            tileGo.transform.parent = transform;
-            Tile tile = tileGo.AddComponent<Tile>();
-            tile.manager = this;
-            tile.gridPosition = gridPosition;
-            tileGo.SetActive(true);
+            if (!tiles.Contains(gridPosition))
+            {
+                tiles.Add(gridPosition);
+                GameObject tileGo = new GameObject();
+                tileGo.SetActive(false);
+                tileGo.name = $"Tile {gridPosition.x} : {gridPosition.y}";
+                tileGo.transform.parent = transform;
+                Tile tile = tileGo.AddComponent<Tile>();
+                tile.manager = this;
+                tile.gridPosition = gridPosition;
+                tileGo.SetActive(true);
+            }
         }
     }
 }
