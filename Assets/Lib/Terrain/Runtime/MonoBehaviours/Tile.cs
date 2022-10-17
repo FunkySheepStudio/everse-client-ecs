@@ -32,11 +32,10 @@ namespace FunkySheep.Earth.Terrain
             terrain.terrainData = new TerrainData();
             GetComponent<UnityEngine.TerrainCollider>().terrainData = terrain.terrainData;
 
-            // Reverse the Y axis since the map Y axis is reversed from the unity Y axis
             transform.position = new Vector3(
                 gridPosition.x * Earth.Manager.Instance.tileSize,
                 0,
-                -gridPosition.y * Earth.Manager.Instance.tileSize
+                gridPosition.y * Earth.Manager.Instance.tileSize
             );
 
             DownloadHeights();
@@ -46,10 +45,11 @@ namespace FunkySheep.Earth.Terrain
         void DownloadHeights()
         {
             string[] variables = new string[3] { "zoom", "position.x", "position.y" };
+            // Reverse the Y axis since the map Y axis is reversed from the unity Y axis
             string[] values = new string[3] {
                 Earth.Manager.Instance.zoomLevel.ToString(),
                 (Earth.Manager.Instance.mapPosition.x + gridPosition.x).ToString(),
-                (Earth.Manager.Instance.mapPosition.y + gridPosition.y).ToString()
+                (Earth.Manager.Instance.mapPosition.y - gridPosition.y).ToString()
             };
 
             string url = manager.heightsUrl.Interpolate(values, variables);
@@ -62,6 +62,7 @@ namespace FunkySheep.Earth.Terrain
 
         public void ProcessHeights(Texture2D texture)
         {
+
             NativeArray<Byte> bytes = texture.GetRawTextureData<Byte>();
             NativeArray<float> heights = new NativeArray<float>(bytes.Length / 4, Allocator.Temp);
 
@@ -94,10 +95,11 @@ namespace FunkySheep.Earth.Terrain
         void DownloadDiffuse()
         {
             string[] variables = new string[3] { "zoom", "position.x", "position.y" };
+            // Reverse the Y axis since the map Y axis is reversed from the unity Y axis
             string[] values = new string[3] {
                 Earth.Manager.Instance.zoomLevel.ToString(),
                 (Earth.Manager.Instance.mapPosition.x + gridPosition.x).ToString(),
-                (Earth.Manager.Instance.mapPosition.y + gridPosition.y).ToString()
+                (Earth.Manager.Instance.mapPosition.y - gridPosition.y).ToString()
             };
 
             string url = manager.diffuseUrl.Interpolate(values, variables);
@@ -110,6 +112,8 @@ namespace FunkySheep.Earth.Terrain
 
         public void ProcessDiffuse(Texture2D texture)
         {
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Point;
             terrain.materialTemplate.SetTexture("_MainTex", texture);
         }
 

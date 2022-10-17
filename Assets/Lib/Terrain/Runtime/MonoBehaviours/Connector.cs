@@ -50,7 +50,7 @@ namespace FunkySheep.Earth.Terrain
 
         void ConnectTop(UnityEngine.Terrain top)
         {
-            float[,] heights = terrainData.GetHeights(0, terrainData.heightmapResolution - 2, terrainData.heightmapResolution, 1);
+            float[,] heights = terrainData.GetHeights(0, terrainData.heightmapResolution - 1, terrainData.heightmapResolution, 1);
             float[,] heightsTop = top.terrainData.GetHeights(0, 0, terrainData.heightmapResolution, 1);
             float[,] heightsNew = heights;
 
@@ -70,7 +70,7 @@ namespace FunkySheep.Earth.Terrain
         void ConnectLeft(UnityEngine.Terrain left)
         {
             float[,] heights = terrainData.GetHeights(0, 0, 1, terrainData.heightmapResolution);
-            float[,] heightsLeft = left.terrainData.GetHeights(terrainData.heightmapResolution - 2, 0, 1, terrainData.heightmapResolution);
+            float[,] heightsLeft = left.terrainData.GetHeights(terrainData.heightmapResolution - 1, 0, 1, terrainData.heightmapResolution);
             float[,] heightsNew = heights;
 
             for (int x = 0; x < heightsNew.Length; x++)

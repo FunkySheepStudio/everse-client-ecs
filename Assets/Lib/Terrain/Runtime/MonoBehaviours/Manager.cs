@@ -13,7 +13,7 @@ namespace FunkySheep.Earth.Terrain
 
         UnityEngine.Terrain terrain;
 
-        private void Awake()
+        private void Start()
         {
             Earth.Manager.Instance.terrainManager = this;
         }
