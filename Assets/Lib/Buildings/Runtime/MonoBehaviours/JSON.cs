@@ -16,6 +16,7 @@ namespace FunkySheep.Earth.Buildings
     {
         public string type;
         public JsonOsmGeometry[] geometry;
+        public JsonOsmElement[] members;
 
         public GPSCoordinatesArray[] AsGPSCoordinatesArray()
         {

@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Entities;
 using Unity.Collections;
+using Unity.Entities.UniversalDelegates;
 
 namespace FunkySheep.Earth.Buildings
 {
@@ -32,18 +33,32 @@ namespace FunkySheep.Earth.Buildings
 
                 for (int i = 0; i < buildings.elements.Length; i++)
                 {
-                    if (buildings.elements[i].geometry == null)
-                        break;
-
-                    Entity buildingEntity = entityManager.CreateEntity();
-                    entityManager.AddBuffer<GPSCoordinatesArray>(buildingEntity);
-                    DynamicBuffer<GPSCoordinatesArray> points = entityManager.GetBuffer<GPSCoordinatesArray>(buildingEntity);
-
-                    points.CopyFrom(new NativeArray<GPSCoordinatesArray>(buildings.elements[i].AsGPSCoordinatesArray(), Allocator.Temp));
-
-                    entityManager.AddComponent<BuildingTag>(buildingEntity);
+                    AddBuildingGeometryEntity(buildings.elements[i]);
                 }
             }));
+        }
+
+        public void AddBuildingGeometryEntity(JsonOsmElement element)
+        {
+            if (element.geometry != null)
+            {
+                Entity buildingEntity = entityManager.CreateEntity();
+                entityManager.AddBuffer<GPSCoordinatesArray>(buildingEntity);
+                DynamicBuffer<GPSCoordinatesArray> points = entityManager.GetBuffer<GPSCoordinatesArray>(buildingEntity);
+
+                points.CopyFrom(new NativeArray<GPSCoordinatesArray>(element.AsGPSCoordinatesArray(), Allocator.Temp));
+
+                entityManager.AddComponent<BuildingTag>(buildingEntity);
+            }
+
+            // Used for relations
+            if (element.members != null)
+            {
+                for (int i = 0; i < element.members.Length; i++)
+                {
+                    AddBuildingGeometryEntity(element.members[i]);
+                }
+            }
         }
 
         /// <summary>
