@@ -1,5 +1,7 @@
 using Unity.Mathematics;
 using Unity.Entities;
+using System;
+using UnityEngine.Rendering.Universal;
 
 namespace FunkySheep.Earth.Buildings
 {
@@ -15,43 +17,10 @@ namespace FunkySheep.Earth.Buildings
         public string type;
         public JsonOsmGeometry[] geometry;
 
-        /*public float3[] points
+        public GPSCoordinatesArray[] AsGPSCoordinatesArray()
         {
-            get {
-                float3[] points = new float3[geometry.Length];
-
-                for (int i = 0; i < points.Length; i++)
-                {
-                    points[i] = Earth.Manager.GetWorldPosition(geometry[i].coordinates);
-                    points[i].y = UnityEngine.Terrain.activeTerrain.SampleHeight(points[i]);
-                }
-
-                return points;
-            }
-        }*/
-
-        /*public DynamicBuffer<Point> points
-        {
-            get
-            {
-                DynamicBuffer<Point> points = new DynamicBuffer<Point>();
-
-                for (int i = 0; i < geometry.Length; i++)
-                {
-                    float3 point = Earth.Manager.GetWorldPosition(geometry[i].coordinates);
-                    point.y = UnityEngine.Terrain.activeTerrain.SampleHeight(point);
-
-                    points.Add(
-                        new Point
-                        {
-                            Value = point
-                        }
-                    );
-                }
-
-                return points;
-            }
-        }*/
+            return Array.ConvertAll(geometry, item => new GPSCoordinatesArray { Value = item.coordinates });
+        }
     }
 
     public struct Point : IBufferElementData

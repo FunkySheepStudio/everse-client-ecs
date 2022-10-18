@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Mathematics;
 using Unity.Entities;
+using Unity.Collections;
 
 namespace FunkySheep.Earth.Buildings
 {
@@ -38,22 +39,7 @@ namespace FunkySheep.Earth.Buildings
                     entityManager.AddBuffer<GPSCoordinatesArray>(buildingEntity);
                     DynamicBuffer<GPSCoordinatesArray> points = entityManager.GetBuffer<GPSCoordinatesArray>(buildingEntity);
 
-                    for (int j = 0; j < buildings.elements[i].geometry.Length; j++)
-                    {
-                        points.Add(
-                            new GPSCoordinatesArray
-                            {
-                                Value = new GPSCoordinates
-                                {
-                                    Value = new double2
-                                    {
-                                        x = buildings.elements[i].geometry[j].lat,
-                                        y = buildings.elements[i].geometry[j].lon
-                                    }
-                                }
-                            }
-                        );
-                    }
+                    points.CopyFrom(new NativeArray<GPSCoordinatesArray>(buildings.elements[i].AsGPSCoordinatesArray(), Allocator.Temp));
 
                     entityManager.AddComponent<BuildingTag>(buildingEntity);
                 }
