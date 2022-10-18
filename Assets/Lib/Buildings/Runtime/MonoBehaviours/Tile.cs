@@ -34,7 +34,6 @@ namespace FunkySheep.Earth.Buildings
                     if (buildings.elements[i].geometry == null)
                         break;
                     Entity buildingEntity = entityManager.CreateEntity();
-                    entityManager.AddComponent<BuildingComponent>(buildingEntity);
                     entityManager.AddBuffer<Point>(buildingEntity);
                     DynamicBuffer<Point> points = entityManager.GetBuffer<Point>(buildingEntity);
 

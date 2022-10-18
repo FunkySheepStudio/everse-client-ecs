@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 997949139648199706}
-  - component: {fileID: 997949139648199707}
+  - component: {fileID: 6096744211728423384}
   m_Layer: 0
-  m_Name: Building
+  m_Name: Building Authoring
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &997949139648199707
+--- !u!114 &6096744211728423384
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -44,5 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ff7d74e11358c146b6ce26d281f120d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manager: {fileID: 0}
-  prefab: {fileID: 0}
+  buildingPrefab: {fileID: 8464561336209670235, guid: 98fcdf24a30b77f4d8f6b1dc6c498b45,
+    type: 3}
