@@ -33,22 +33,29 @@ namespace FunkySheep.Earth.Buildings
                 {
                     if (buildings.elements[i].geometry == null)
                         break;
+
                     Entity buildingEntity = entityManager.CreateEntity();
-                    entityManager.AddBuffer<Point>(buildingEntity);
-                    DynamicBuffer<Point> points = entityManager.GetBuffer<Point>(buildingEntity);
+                    entityManager.AddBuffer<GPSCoordinatesArray>(buildingEntity);
+                    DynamicBuffer<GPSCoordinatesArray> points = entityManager.GetBuffer<GPSCoordinatesArray>(buildingEntity);
 
                     for (int j = 0; j < buildings.elements[i].geometry.Length; j++)
                     {
-                        float3 point = Earth.Manager.GetWorldPosition(buildings.elements[i].geometry[j].coordinates);
-                        point.y = UnityEngine.Terrain.activeTerrain.SampleHeight(point);
-
                         points.Add(
-                            new Point
+                            new GPSCoordinatesArray
                             {
-                                Value = point
+                                Value = new GPSCoordinates
+                                {
+                                    Value = new double2
+                                    {
+                                        x = buildings.elements[i].geometry[j].lat,
+                                        y = buildings.elements[i].geometry[j].lon
+                                    }
+                                }
                             }
                         );
                     }
+
+                    entityManager.AddComponent<BuildingTag>(buildingEntity);
                 }
             }));
         }

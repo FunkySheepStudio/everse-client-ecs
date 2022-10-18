@@ -2,7 +2,7 @@ using Unity.Entities;
 
 namespace FunkySheep.Earth.Buildings
 {
-    public struct BuildingComponent : IComponentData
+    public struct BuildingPrefab : IComponentData
     {
         public Entity prefab;
     }

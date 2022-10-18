@@ -10,7 +10,7 @@ namespace FunkySheep.Earth.Buildings
     {
         protected override void OnUpdate()
         {
-            BuildingComponent building = GetSingleton<BuildingComponent>();
+            BuildingPrefab building = GetSingleton<BuildingPrefab>();
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref DynamicBuffer<Point> points) =>
             {
                 for (int i = 0; i < points.Length; i++)
@@ -21,7 +21,7 @@ namespace FunkySheep.Earth.Buildings
                         Value = new UniformScaleTransform
                         {
                             Position = points[i].Value,
-                            Scale = 5
+                            Scale = 1
                         }
                     });
                 }

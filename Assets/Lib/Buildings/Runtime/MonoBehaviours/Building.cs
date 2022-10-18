@@ -12,8 +12,8 @@ namespace FunkySheep.Earth.Buildings
     {
         public override void Bake(Building authoring)
         {
-            AddComponent<BuildingComponent>(
-                new BuildingComponent
+            AddComponent<BuildingPrefab>(
+                new BuildingPrefab
                 {
                     prefab = GetEntity(authoring.buildingPrefab)
                 }
