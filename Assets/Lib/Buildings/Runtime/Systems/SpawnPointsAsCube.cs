@@ -36,41 +36,74 @@ namespace FunkySheep.Earth.Buildings
 
                     // Spawn Left Corner
                     Entity cornerLeft = buffer.Instantiate(building.cornerLeft);
-
-
                     float3 relativePos = points[(i + 1) % points.Length].Value - points[i].Value;
                     Quaternion LookAtRotation = Quaternion.LookRotation(relativePos);
                     Quaternion LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
-
-                    buffer.SetComponent<LocalToWorldTransform>(cornerLeft, new LocalToWorldTransform
+                    buffer.RemoveComponent<LocalToWorldTransform>(cornerLeft);
+                    float4x4 transform = float4x4.TRS(
+                        points[i].Value,
+                        LookAtRotationOnly_Y,
+                        new float3(1, buildingComponent.maxHeight - points[i].Value.y, 1)
+                    );
+                    buffer.SetComponent<LocalToWorld>(cornerLeft, new LocalToWorld
                     {
-                        Value = new UniformScaleTransform
-                        {
-                            Rotation = LookAtRotationOnly_Y,
-                            Position = points[i].Value,
-                            Scale = 10
-                        }
+                        Value = transform
                     });
+
 
                     // Spawn right Corner
                     Entity cornerRight = buffer.Instantiate(building.cornerRight);
+                    relativePos = points[i].Value - points[(i + 1) % points.Length].Value;
+                    LookAtRotation = Quaternion.LookRotation(relativePos);
+                    LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
+                    buffer.RemoveComponent<LocalToWorldTransform>(cornerRight);
+                    transform = float4x4.TRS(
+                        points[(i + 1) % points.Length].Value,
+                        LookAtRotationOnly_Y,
+                        new float3(1, buildingComponent.maxHeight - points[(i + 1) % points.Length].Value.y, 1)
+                    );
+                    buffer.SetComponent<LocalToWorld>(cornerRight, new LocalToWorld
+                    {
+                        Value = transform
+                    });
 
+                    // Spawn the wall
+                    Entity wall = buffer.Instantiate(building.wall);
+
+                    float3 position;
+                    if (points[i].Value.y < points[(i + 1) % points.Length].Value.y)
+                    {
+                        position.y = points[i].Value.y;
+                    } else
+                    {
+                        position.y = points[(i + 1) % points.Length].Value.y;
+                    }
+
+                    position.x = (points[i].Value.x + points[(i + 1) % points.Length].Value.x) / 2;
+                    position.z = (points[i].Value.z + points[(i + 1) % points.Length].Value.z) / 2;
+
+                    float wallWith = math.distance(
+                        points[i].Value * new float3(1, 0, 1),
+                        points[(i + 1) % points.Length].Value * new float3(1, 0, 1)
+                        ) - 0.4f;
 
                     relativePos = points[i].Value - points[(i + 1) % points.Length].Value;
                     LookAtRotation = Quaternion.LookRotation(relativePos);
                     LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
-
-                    buffer.SetComponent<LocalToWorldTransform>(cornerRight, new LocalToWorldTransform
+                    buffer.RemoveComponent<LocalToWorldTransform>(wall);
+                    transform = float4x4.TRS(
+                        position,
+                        LookAtRotationOnly_Y,
+                        new float3(1, buildingComponent.maxHeight - position.y, wallWith)
+                    );
+                    buffer.SetComponent<LocalToWorld>(wall, new LocalToWorld
                     {
-                        Value = new UniformScaleTransform
-                        {
-                            Rotation = LookAtRotationOnly_Y,
-                            Position = points[(i + 1) % points.Length].Value,
-                            Scale = 10
-                        }
+                        Value = transform
                     });
+
                 }
-                buffer.DestroyEntity(entity);
+                //buffer.DestroyEntity(entity);
+                buffer.SetComponentEnabled<BuildingComponent>(entity, false);
             })
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .ScheduleParallel();

@@ -6,5 +6,6 @@ namespace FunkySheep.Earth.Buildings
     {
         public Entity cornerLeft;
         public Entity cornerRight;
+        public Entity wall;
     }
 }

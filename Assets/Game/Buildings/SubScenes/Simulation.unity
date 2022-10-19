@@ -193,6 +193,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6096744211728423384, guid: 7c771ab4f42edec40b27c098612d7800,
         type: 3}
+      propertyPath: wall
+      value: 
+      objectReference: {fileID: 8464561336209670235, guid: ef0f83972a67c12478c65c595d80ad42,
+        type: 3}
+    - target: {fileID: 6096744211728423384, guid: 7c771ab4f42edec40b27c098612d7800,
+        type: 3}
       propertyPath: cornerLeft
       value: 
       objectReference: {fileID: 8464561336209670235, guid: 98fcdf24a30b77f4d8f6b1dc6c498b45,

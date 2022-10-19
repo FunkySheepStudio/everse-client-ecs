@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Building
+  m_Name: CornerLeft
   m_Shader: {fileID: -6465566751694194690, guid: 7f6ba209cbad7974594dc965bf4973b0,
     type: 3}
   m_Parent: {fileID: 0}
@@ -40,7 +40,8 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    m_Colors: []
+    m_Colors:
+    - _Color: {r: 1, g: 0, b: 0.083918095, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &7684359548072728391
 MonoBehaviour:

@@ -16,10 +16,9 @@ namespace FunkySheep.Earth.Buildings
             {
                 DynamicBuffer<Point> points = buffer.AddBuffer<Point>(entity);
 
-                float3 center = new float3();
-
                 for (int i = 0; i < gPSCoordinatesArray.Length - 1; i++)
                 {
+                    
                     float3 point = Earth.Manager.GetWorldPosition(gPSCoordinatesArray[i].Value);
                     float? height = Terrain.Manager.GetHeight(point);
                     if (height != null)
@@ -32,17 +31,25 @@ namespace FunkySheep.Earth.Buildings
                             }
                         );
 
-                        center += point;
+                        if (i == 0)
+                        {
+                            buildingComponent.minHeight = point.y;
+                            buildingComponent.maxHeight = point.y;
+                        } else if (point.y < buildingComponent.minHeight)
+                        {
+                            buildingComponent.minHeight = point.y;
+                        } else if (point.y > buildingComponent.maxHeight)
+                        {
+                            buildingComponent.maxHeight = point.y;
+                        }
+
+                        buildingComponent.center += point;
                     }
                 }
 
-                center /= points.Length;
+                buildingComponent.center /= points.Length;
 
                 buffer.RemoveComponent<GPSCoordinatesArray>(entity);
-                buffer.SetComponent<BuildingComponent>(entity, new BuildingComponent
-                {
-                    center = center
-                });
                 buffer.SetComponentEnabled<BuildingComponent>(entity, true);
             })
             .WithoutBurst()
