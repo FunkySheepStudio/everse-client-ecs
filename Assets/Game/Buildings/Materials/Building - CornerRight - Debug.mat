@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CornerRight
+  m_Name: Building - CornerRight - Debug
   m_Shader: {fileID: -6465566751694194690, guid: 7f6ba209cbad7974594dc965bf4973b0,
     type: 3}
   m_Parent: {fileID: 0}

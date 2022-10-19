@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6260997956938600615}
   - component: {fileID: 7925264014503706579}
   m_Layer: 0
-  m_Name: Building Wall
+  m_Name: Building Corner Right - Debug
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8464561336209670235}
-  m_Mesh: {fileID: 8733429697405204941, guid: b4ea9a8455f16484bafda0f1d57662a9, type: 3}
+  m_Mesh: {fileID: -2709699783731817045, guid: b4ea9a8455f16484bafda0f1d57662a9, type: 3}
 --- !u!23 &7925264014503706579
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 69d37ddd881e16f4ea141a92d2a9c150, type: 2}
+  - {fileID: 2100000, guid: e2d71be0895395e4b8bb837bf96faa48, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace FunkySheep.Earth.Buildings
 {
+    [RequireMatchingQueriesForUpdate]
     public partial class CreateBuildingGeometry : SystemBase
     {
         protected override void OnUpdate()
@@ -19,11 +20,12 @@ namespace FunkySheep.Earth.Buildings
                 // Set Points in clockwise order
                 points = SetClockWise(points);
 
+                float heightOffset = 5;
 
                 for (int i = 0; i < points.Length; i++)
                 {
                     // For debugging
-                    if (i != points.Length - 1)
+                    /*if (i != points.Length - 1)
                     {
                         float colorIndice = (1f / points.Length) * i;
 
@@ -32,7 +34,7 @@ namespace FunkySheep.Earth.Buildings
                     } else
                     {
                         UnityEngine.Debug.DrawLine(points[0].Value, points[points.Length - 1].Value, UnityEngine.Color.black, 10000);
-                    }
+                    }*/
 
                     // Spawn Left Corner
                     Entity cornerLeft = buffer.Instantiate(building.cornerLeft);
@@ -43,7 +45,7 @@ namespace FunkySheep.Earth.Buildings
                     float4x4 transform = float4x4.TRS(
                         points[i].Value,
                         LookAtRotationOnly_Y,
-                        new float3(1, buildingComponent.maxHeight - points[i].Value.y, 1)
+                        new float3(1, buildingComponent.maxHeight - points[i].Value.y + heightOffset, 1)
                     );
                     buffer.SetComponent<LocalToWorld>(cornerLeft, new LocalToWorld
                     {
@@ -60,7 +62,7 @@ namespace FunkySheep.Earth.Buildings
                     transform = float4x4.TRS(
                         points[(i + 1) % points.Length].Value,
                         LookAtRotationOnly_Y,
-                        new float3(1, buildingComponent.maxHeight - points[(i + 1) % points.Length].Value.y, 1)
+                        new float3(1, buildingComponent.maxHeight - points[(i + 1) % points.Length].Value.y + heightOffset, 1)
                     );
                     buffer.SetComponent<LocalToWorld>(cornerRight, new LocalToWorld
                     {
@@ -82,7 +84,7 @@ namespace FunkySheep.Earth.Buildings
                     position.x = (points[i].Value.x + points[(i + 1) % points.Length].Value.x) / 2;
                     position.z = (points[i].Value.z + points[(i + 1) % points.Length].Value.z) / 2;
 
-                    float wallWith = math.distance(
+                    float wallWidth = math.distance(
                         points[i].Value * new float3(1, 0, 1),
                         points[(i + 1) % points.Length].Value * new float3(1, 0, 1)
                         ) - 0.4f;
@@ -94,7 +96,7 @@ namespace FunkySheep.Earth.Buildings
                     transform = float4x4.TRS(
                         position,
                         LookAtRotationOnly_Y,
-                        new float3(1, buildingComponent.maxHeight - position.y, wallWith)
+                        new float3(1, buildingComponent.maxHeight - position.y + heightOffset, wallWidth)
                     );
                     buffer.SetComponent<LocalToWorld>(wall, new LocalToWorld
                     {
