@@ -195,19 +195,19 @@ PrefabInstance:
         type: 3}
       propertyPath: wall
       value: 
-      objectReference: {fileID: 8464561336209670235, guid: ef0f83972a67c12478c65c595d80ad42,
+      objectReference: {fileID: 5379540098024438089, guid: b22906b75c248f0408ad84425afe0a87,
         type: 3}
     - target: {fileID: 6096744211728423384, guid: 7c771ab4f42edec40b27c098612d7800,
         type: 3}
       propertyPath: cornerLeft
       value: 
-      objectReference: {fileID: 8464561336209670235, guid: 98fcdf24a30b77f4d8f6b1dc6c498b45,
+      objectReference: {fileID: 3917312010718629827, guid: 9a553a71f9114fe469a016501a8ab331,
         type: 3}
     - target: {fileID: 6096744211728423384, guid: 7c771ab4f42edec40b27c098612d7800,
         type: 3}
       propertyPath: cornerRight
       value: 
-      objectReference: {fileID: 8464561336209670235, guid: bb38513811e38a846b30cef045e68829,
+      objectReference: {fileID: 1474700419529820875, guid: da1a9fea68992404e878c0151b8311f1,
         type: 3}
     - target: {fileID: 6096744211728423384, guid: 7c771ab4f42edec40b27c098612d7800,
         type: 3}
