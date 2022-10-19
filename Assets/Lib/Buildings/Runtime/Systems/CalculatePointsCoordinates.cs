@@ -14,6 +14,17 @@ namespace FunkySheep.Earth.Buildings
         {
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref BuildingComponent buildingComponent, in DynamicBuffer<GPSCoordinatesArray> gPSCoordinatesArray) =>
             {
+                // Discard the change if the building is on a terrain that do not exist
+                for (int i = 0; i < gPSCoordinatesArray.Length - 1; i++)
+                {
+                    float3 point = Earth.Manager.GetWorldPosition(gPSCoordinatesArray[i].Value);
+                    float? height = Terrain.Manager.GetHeight(point);
+                    if (height == null)
+                    {
+                        return;
+                    }
+                }
+
                 DynamicBuffer<Point> points = buffer.AddBuffer<Point>(entity);
 
                 for (int i = 0; i < gPSCoordinatesArray.Length - 1; i++)
