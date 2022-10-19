@@ -12,11 +12,13 @@ namespace FunkySheep.Earth.Buildings
     {
         protected override void OnUpdate()
         {
-            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in BuildingTag buildingTag, in DynamicBuffer<GPSCoordinatesArray> gPSCoordinatesArray) =>
+            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref BuildingComponent buildingComponent, in DynamicBuffer<GPSCoordinatesArray> gPSCoordinatesArray) =>
             {
                 DynamicBuffer<Point> points = buffer.AddBuffer<Point>(entity);
 
-                for (int i = 0; i < gPSCoordinatesArray.Length; i++)
+                float3 center = new float3();
+
+                for (int i = 0; i < gPSCoordinatesArray.Length - 1; i++)
                 {
                     float3 point = Earth.Manager.GetWorldPosition(gPSCoordinatesArray[i].Value);
                     float? height = Terrain.Manager.GetHeight(point);
@@ -29,10 +31,19 @@ namespace FunkySheep.Earth.Buildings
                                 Value = point
                             }
                         );
+
+                        center += point;
                     }
                 }
 
+                center /= points.Length;
+
                 buffer.RemoveComponent<GPSCoordinatesArray>(entity);
+                buffer.SetComponent<BuildingComponent>(entity, new BuildingComponent
+                {
+                    center = center
+                });
+                buffer.SetComponentEnabled<BuildingComponent>(entity, true);
             })
             .WithoutBurst()
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()

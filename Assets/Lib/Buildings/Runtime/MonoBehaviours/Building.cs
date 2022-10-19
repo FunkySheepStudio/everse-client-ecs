@@ -5,7 +5,8 @@ namespace FunkySheep.Earth.Buildings
 {
     public class Building : MonoBehaviour
     {
-        public GameObject buildingPrefab;
+        public GameObject cornerLeft;
+        public GameObject cornerRight;
     }
 
     public class BakeBuilding : Baker<Building>
@@ -15,7 +16,8 @@ namespace FunkySheep.Earth.Buildings
             AddComponent<BuildingPrefab>(
                 new BuildingPrefab
                 {
-                    prefab = GetEntity(authoring.buildingPrefab)
+                    cornerLeft = GetEntity(authoring.cornerLeft),
+                    cornerRight = GetEntity(authoring.cornerRight)
                 }
             );
         }
