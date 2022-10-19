@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FunkySheep.Earth.Buildings
 {
-    public partial class SpawnPointsAsCube : SystemBase
+    public partial class CreateBuildingGeometry : SystemBase
     {
         protected override void OnUpdate()
         {
