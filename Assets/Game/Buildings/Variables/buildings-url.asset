@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   apiName: 
   reset: 0
-  value: https://overpass.kumi.systems/api/interpreter?data=[out:json][timeout:25];(way[%22building%22][%22building%22!~%22roof%22][%22wall%22!~%22no%22]({startLatitude},{startLongitude},{endLatitude},{endLongitude});relation[%22building%22]({startLatitude},{startLongitude},{endLatitude},{endLongitude}););out%20body%20geom%20qt;
+  value: https://overpass.kumi.systems/api/interpreter?data=[out:json][timeout:25];(way[%22building%22][%22building%22!~%22roof%22]({startLatitude},{startLongitude},{endLatitude},{endLongitude});relation[%22building%22]({startLatitude},{startLongitude},{endLatitude},{endLongitude}););out%20body%20geom%20qt;

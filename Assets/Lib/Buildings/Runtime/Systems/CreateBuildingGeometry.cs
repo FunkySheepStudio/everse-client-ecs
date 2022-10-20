@@ -24,6 +24,10 @@ namespace FunkySheep.Earth.Buildings
 
                 for (int i = 0; i < points.Length; i++)
                 {
+                    float3 relativePos;
+                    Quaternion LookAtRotation;
+                    Quaternion LookAtRotationOnly_Y;
+                    float4x4 transform;
                     // For debugging
                     /*if (i != points.Length - 1)
                     {
@@ -36,13 +40,15 @@ namespace FunkySheep.Earth.Buildings
                         UnityEngine.Debug.DrawLine(points[0].Value, points[points.Length - 1].Value, UnityEngine.Color.black, 10000);
                     }*/
 
+
+                    /*
                     // Spawn Left Corner
                     Entity cornerLeft = buffer.Instantiate(building.cornerLeft);
-                    float3 relativePos = points[(i + 1) % points.Length].Value - points[i].Value;
-                    Quaternion LookAtRotation = Quaternion.LookRotation(relativePos);
-                    Quaternion LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
+                    relativePos = points[(i + 1) % points.Length].Value - points[i].Value;
+                    LookAtRotation = Quaternion.LookRotation(relativePos);
+                    LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
                     buffer.RemoveComponent<LocalToWorldTransform>(cornerLeft);
-                    float4x4 transform = float4x4.TRS(
+                    transform = float4x4.TRS(
                         points[i].Value,
                         LookAtRotationOnly_Y,
                         new float3(1, buildingComponent.maxHeight - points[i].Value.y + heightOffset, 1)
@@ -68,6 +74,7 @@ namespace FunkySheep.Earth.Buildings
                     {
                         Value = transform
                     });
+                    */
 
                     // Spawn the wall
                     Entity wall = buffer.Instantiate(building.wall);
@@ -87,7 +94,7 @@ namespace FunkySheep.Earth.Buildings
                     float wallWidth = math.distance(
                         points[i].Value * new float3(1, 0, 1),
                         points[(i + 1) % points.Length].Value * new float3(1, 0, 1)
-                        ) - 0.4f;
+                    );
 
                     relativePos = points[i].Value - points[(i + 1) % points.Length].Value;
                     LookAtRotation = Quaternion.LookRotation(relativePos);
