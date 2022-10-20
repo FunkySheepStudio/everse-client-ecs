@@ -49,6 +49,8 @@ namespace FunkySheep.Earth.Buildings
                 points.CopyFrom(new NativeArray<GPSCoordinatesArray>(element.AsGPSCoordinatesArray(), Allocator.Temp));
 
                 entityManager.AddComponent<BuildingComponent>(buildingEntity);
+                entityManager.AddComponent<WallsTag>(buildingEntity);
+                entityManager.AddComponent<RoofTag>(buildingEntity);
             }
 
             // Used for relations

@@ -62,6 +62,7 @@ namespace FunkySheep.Earth.Buildings
 
                 buffer.RemoveComponent<GPSCoordinatesArray>(entity);
                 buffer.SetComponentEnabled<BuildingComponent>(entity, true);
+                buffer.SetComponentEnabled<WallsTag>(entity, true);
             })
             .WithoutBurst()
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()

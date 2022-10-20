@@ -12,7 +12,7 @@ namespace FunkySheep.Earth.Buildings
         protected override void OnUpdate()
         {
             BuildingPrefab building = GetSingleton<BuildingPrefab>();
-            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref DynamicBuffer<Point> points, in BuildingComponent buildingComponent) =>
+            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref DynamicBuffer<Point> points, in BuildingComponent buildingComponent, in WallsTag wallsTag) =>
             {
                 // Set the farest point as first one
                 points = SetFirstPoint(points, buildingComponent.center);
@@ -25,7 +25,7 @@ namespace FunkySheep.Earth.Buildings
                 for (int i = 0; i < points.Length; i++)
                 {
                     float3 relativePos;
-                    Quaternion LookAtRotation;
+                    Quaternion LookAtRotation = Quaternion.identity;
                     Quaternion LookAtRotationOnly_Y;
                     float4x4 transform;
                     // For debugging
@@ -97,7 +97,8 @@ namespace FunkySheep.Earth.Buildings
                     );
 
                     relativePos = points[i].Value - points[(i + 1) % points.Length].Value;
-                    LookAtRotation = Quaternion.LookRotation(relativePos);
+                    if (!relativePos.Equals(float3.zero))
+                        LookAtRotation = Quaternion.LookRotation(relativePos);
                     LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
                     buffer.RemoveComponent<LocalToWorldTransform>(wall);
                     transform = float4x4.TRS(
@@ -110,9 +111,20 @@ namespace FunkySheep.Earth.Buildings
                         Value = transform
                     });
 
+                    // Update the point to create the roof
+                    points[i] = new Point
+                    {
+                        Value = new float3
+                        {
+                            x = points[i].Value.x,
+                            y = buildingComponent.maxHeight + heightOffset,
+                            z = points[i].Value.z
+                        }
+                    };
+
                 }
-                //buffer.DestroyEntity(entity);
-                buffer.SetComponentEnabled<BuildingComponent>(entity, false);
+                buffer.SetComponentEnabled<WallsTag>(entity, false);
+                buffer.SetComponentEnabled<RoofTag>(entity, true);
             })
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .ScheduleParallel();
@@ -200,6 +212,5 @@ namespace FunkySheep.Earth.Buildings
             }
 
         }
-
     }
 }
