@@ -1,8 +1,13 @@
 using System.Collections.Generic;
+using TreeEditor;
 using Unity.Entities;
 using Unity.Entities.UniversalDelegates;
 using Unity.Mathematics;
+using Unity.Rendering;
+using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Rendering;
+using static FunkySheep.Earth.Buildings.GenerateRoofMesh;
 
 namespace FunkySheep.Earth.Buildings
 {
@@ -18,6 +23,7 @@ namespace FunkySheep.Earth.Buildings
             public bool isReflex;
             public bool isConvex;
             public bool isEar;
+            public int index;
 
             public Vertex(Vector3 position)
             {
@@ -45,26 +51,34 @@ namespace FunkySheep.Earth.Buildings
                 this.v2 = new Vertex(v2);
                 this.v3 = new Vertex(v3);
             }
-
-            public Triangle(Vertex v1, Vertex v2, Vertex v3)
-            {
-                this.v1 = v1;
-                this.v2 = v2;
-                this.v3 = v3;
-            }
         }
+
+        public Material material;
+
+        protected override void OnCreate()
+        {
+            material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        }
+
 
         protected override void OnUpdate()
         {
-            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref DynamicBuffer<Point> floatPoints, in BuildingComponent buildingComponent, in RoofTag roofTag) =>
+            Entities.ForEach((Entity entity, ref DynamicBuffer<Point> floatPoints, in BuildingComponent buildingComponent, in RoofTag roofTag) =>
             {
                 //The list with triangles the method returns
-                List<Triangle> triangles = new List<Triangle>();
+                List<int> triangles = new List<int>();
                 List<Vector3> points = new List<Vector3>();
+                List<Vector3> uvs = new List<Vector3>();
+
+                Vector3 minPoint = floatPoints[0].Value;
+                Vector3 maxPoint = floatPoints[0].Value;
 
                 for (int i = 0; i < floatPoints.Length; i++)
                 {
                     points.Add(floatPoints[i].Value);
+
+                    if (Vector3.Distance(minPoint, floatPoints[i].Value) > Vector3.Distance(minPoint, maxPoint))
+                        maxPoint = floatPoints[i].Value;
                 }
 
                 if (points.Count < 3)
@@ -75,7 +89,9 @@ namespace FunkySheep.Earth.Buildings
                 //If we just have three points, then we dont have to do all calculations
                 if (points.Count == 3)
                 {
-                    triangles.Add(new Triangle(points[0], points[1], points[2]));
+                    triangles.Add(0);
+                    triangles.Add(1);
+                    triangles.Add(2);
 
                     return;
                 }
@@ -86,6 +102,13 @@ namespace FunkySheep.Earth.Buildings
                 for (int i = 0; i < points.Count; i++)
                 {
                     vertices.Add(new Vertex(points[i]));
+                    vertices[i].index = i;
+
+                    uvs.Add(new Vector3(
+                        (points[i].x - minPoint.x) / (maxPoint.x - minPoint.x),
+                        (points[i].y - minPoint.y) / (maxPoint.y - minPoint.y),
+                        0
+                    ));
                 }
 
                 //Find the next and previous vertex
@@ -123,8 +146,9 @@ namespace FunkySheep.Earth.Buildings
                     if (vertices.Count == 3)
                     {
                         //The final triangle
-                        triangles.Add(new Triangle(vertices[0], vertices[0].prevVertex, vertices[0].nextVertex));
-
+                        triangles.Add(vertices[0].index);
+                        triangles.Add(vertices[0].prevVertex.index);
+                        triangles.Add(vertices[0].nextVertex.index);
                         break;
                     }
 
@@ -137,9 +161,9 @@ namespace FunkySheep.Earth.Buildings
                     Vertex earVertexPrev = earVertex.prevVertex;
                     Vertex earVertexNext = earVertex.nextVertex;
 
-                    Triangle newTriangle = new Triangle(earVertex, earVertexPrev, earVertexNext);
-
-                    triangles.Add(newTriangle);
+                    triangles.Add(earVertex.index);
+                    triangles.Add(earVertexPrev.index);
+                    triangles.Add(earVertexNext.index);
 
                     //Remove the vertex from the lists
                     earVertices.Remove(earVertex);
@@ -161,23 +185,60 @@ namespace FunkySheep.Earth.Buildings
                     IsVertexEar(earVertexNext, vertices, earVertices);
                 }
 
-                for (int i = 0; i < triangles.Count; i++)
-                {
-                    debugTriangles(triangles[i]);
-                }
+                triangles.Reverse();
+                //debugTriangles(triangles, points);
 
-                buffer.SetComponentEnabled<RoofTag>(entity, false);
+                Mesh mesh = new Mesh();
+                var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+                mesh.indexFormat = IndexFormat.UInt32;
+                mesh.Clear();
+                mesh.SetVertices(points.ToArray());
+                mesh.SetIndices(triangles.ToArray(), MeshTopology.Triangles, 0);
+                mesh.SetUVs(0, uvs.ToArray());
+                mesh.RecalculateNormals();
+
+                var desc = new RenderMeshDescription(
+                    shadowCastingMode: ShadowCastingMode.Off,
+                    receiveShadows: false);
+
+                // Create an array of mesh and material required for runtime rendering.
+                var renderMeshArray = new RenderMeshArray(new Material[] { material }, new Mesh[] { mesh });
+
+                //var prototype = entityManager.CreateEntity();
+
+                // Call AddComponents to populate base entity with the components required
+                // by Entities Graphics
+                RenderMeshUtility.AddComponents(
+                    entity,
+                    entityManager,
+                    desc,
+                    renderMeshArray,
+                    MaterialMeshInfo.FromRenderMeshArrayIndices(0, 0));
+
+                entityManager.AddComponent<LocalToWorldTransform>(entity);
+                entityManager.SetComponentData<LocalToWorldTransform>(entity, new LocalToWorldTransform
+                {
+                    Value = new UniformScaleTransform
+                    {
+                        Scale = 1
+                    }
+                });
+
+                entityManager.SetComponentEnabled<RoofTag>(entity, false);
             })
+            .WithStructuralChanges()
             .WithoutBurst()
-            .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .Run();
         }
 
-        public void debugTriangles(Triangle triangle)
+        public void debugTriangles(List<int> triangles, List<Vector3> points)
         {
-            UnityEngine.Debug.DrawLine(triangle.v1.position, triangle.v2.position, Color.red, 10000);
-            UnityEngine.Debug.DrawLine(triangle.v2.position, triangle.v3.position, Color.red, 10000);
-            UnityEngine.Debug.DrawLine(triangle.v3.position, triangle.v1.position, Color.red, 10000);
+            for (int i = 0; i < triangles.Count; i+=3)
+            {
+                UnityEngine.Debug.DrawLine(points[triangles[i]], points[triangles[i + 1]], Color.red, 10000);
+                UnityEngine.Debug.DrawLine(points[triangles[i + 1]], points[triangles[i + 2]], Color.red, 10000);
+                UnityEngine.Debug.DrawLine(points[triangles[i + 2]], points[triangles[i]], Color.red, 10000);
+            }
         }
 
         //Clamp list indices
