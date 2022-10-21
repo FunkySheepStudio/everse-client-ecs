@@ -2,6 +2,7 @@ using Unity.Mathematics;
 using Unity.Entities;
 using System;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.UIElements;
 
 namespace FunkySheep.Earth.Buildings
 {
@@ -27,6 +28,13 @@ namespace FunkySheep.Earth.Buildings
     public struct Point : IBufferElementData
     {
         public float3 Value;
+        //Get 2d pos of this vertex
+        public float2 GetPos2D_XZ()
+        {
+            float2 pos_2d_xz = new float2(Value.x, Value.z);
+
+            return pos_2d_xz;
+        }
     }
 
     [System.Serializable]

@@ -14,13 +14,14 @@ namespace FunkySheep.Earth.Buildings
             BuildingPrefab building = GetSingleton<BuildingPrefab>();
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref DynamicBuffer<Point> points, in BuildingComponent buildingComponent, in WallsTag wallsTag) =>
             {
+                float area = Area(points);
                 // Set the farest point as first one
                 points = SetFirstPoint(points, buildingComponent.center);
 
                 // Set Points in clockwise order
                 points = SetClockWise(points);
 
-                float heightOffset = 5;
+                float heightOffset = area / 4;
 
                 for (int i = 0; i < points.Length; i++)
                 {
@@ -28,53 +29,6 @@ namespace FunkySheep.Earth.Buildings
                     Quaternion LookAtRotation = Quaternion.identity;
                     Quaternion LookAtRotationOnly_Y;
                     float4x4 transform;
-                    // For debugging
-                    /*if (i != points.Length - 1)
-                    {
-                        float colorIndice = (1f / points.Length) * i;
-
-                        UnityEngine.Color color = new UnityEngine.Color(colorIndice, 0.5f, 0);
-                        UnityEngine.Debug.DrawLine(points[i].Value, points[i + 1].Value, color, 10000);
-                    } else
-                    {
-                        UnityEngine.Debug.DrawLine(points[0].Value, points[points.Length - 1].Value, UnityEngine.Color.black, 10000);
-                    }*/
-
-
-                    /*
-                    // Spawn Left Corner
-                    Entity cornerLeft = buffer.Instantiate(building.cornerLeft);
-                    relativePos = points[(i + 1) % points.Length].Value - points[i].Value;
-                    LookAtRotation = Quaternion.LookRotation(relativePos);
-                    LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
-                    buffer.RemoveComponent<LocalToWorldTransform>(cornerLeft);
-                    transform = float4x4.TRS(
-                        points[i].Value,
-                        LookAtRotationOnly_Y,
-                        new float3(1, buildingComponent.maxHeight - points[i].Value.y + heightOffset, 1)
-                    );
-                    buffer.SetComponent<LocalToWorld>(cornerLeft, new LocalToWorld
-                    {
-                        Value = transform
-                    });
-
-
-                    // Spawn right Corner
-                    Entity cornerRight = buffer.Instantiate(building.cornerRight);
-                    relativePos = points[i].Value - points[(i + 1) % points.Length].Value;
-                    LookAtRotation = Quaternion.LookRotation(relativePos);
-                    LookAtRotationOnly_Y = Quaternion.Euler(0, LookAtRotation.eulerAngles.y, 0);
-                    buffer.RemoveComponent<LocalToWorldTransform>(cornerRight);
-                    transform = float4x4.TRS(
-                        points[(i + 1) % points.Length].Value,
-                        LookAtRotationOnly_Y,
-                        new float3(1, buildingComponent.maxHeight - points[(i + 1) % points.Length].Value.y + heightOffset, 1)
-                    );
-                    buffer.SetComponent<LocalToWorld>(cornerRight, new LocalToWorld
-                    {
-                        Value = transform
-                    });
-                    */
 
                     // Spawn the wall
                     Entity wall = buffer.Instantiate(building.wall);
@@ -123,6 +77,7 @@ namespace FunkySheep.Earth.Buildings
                     };
 
                 }
+
                 buffer.SetComponentEnabled<WallsTag>(entity, false);
                 buffer.SetComponentEnabled<RoofTag>(entity, true);
             })
@@ -211,6 +166,22 @@ namespace FunkySheep.Earth.Buildings
                 return 0;
             }
 
+        }
+
+        /// <summary>
+        /// Calculate the building area
+        /// </summary>
+        /// <returns></returns>
+        public static float Area(DynamicBuffer<Point> points)
+        {
+            float area = 0;
+
+            for (int i = 0; i < points.Length; i++)
+            {
+                area += Vector2.Distance(points[i].GetPos2D_XZ(), points[(i + 1) % points.Length].GetPos2D_XZ());
+            }
+
+            return area;
         }
     }
 }
