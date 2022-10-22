@@ -6,7 +6,7 @@ using Unity.Burst;
 namespace FunkySheep.Earth.Terrain
 {
     [AddComponentMenu("FunkySheep/Earth/Terrain/Manager")]
-    public class Manager : MonoBehaviour
+    public class Manager : FunkySheep.Types.Singleton<Manager>
     {
         public Material material;
         public FunkySheep.Types.String heightsUrl;
@@ -15,12 +15,6 @@ namespace FunkySheep.Earth.Terrain
 
         UnityEngine.Terrain terrain;
         List<int2> tiles = new List<int2>();
-
-
-        private void Start()
-        {
-            Earth.Manager.Instance.terrainManager = this;
-        }
 
         public void AddTile(int2 gridPosition)
         {
@@ -32,7 +26,6 @@ namespace FunkySheep.Earth.Terrain
                 tileGo.name = $"Tile {gridPosition.x} : {gridPosition.y}";
                 tileGo.transform.parent = transform;
                 Tile tile = tileGo.AddComponent<Tile>();
-                tile.manager = this;
                 tile.gridPosition = gridPosition;
                 tileGo.SetActive(true);
             }

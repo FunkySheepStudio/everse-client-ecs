@@ -11,6 +11,7 @@ using static FunkySheep.Earth.Buildings.GenerateRoofMesh;
 
 namespace FunkySheep.Earth.Buildings
 {
+    [RequireMatchingQueriesForUpdate]
     public partial class GenerateRoofMesh : SystemBase
     {
         public class Vertex
@@ -63,7 +64,7 @@ namespace FunkySheep.Earth.Buildings
 
         protected override void OnUpdate()
         {
-            Entities.ForEach((Entity entity, ref DynamicBuffer<Point> floatPoints, in BuildingComponent buildingComponent, in RoofTag roofTag) =>
+            Entities.ForEach((Entity entity, in DynamicBuffer<Point> floatPoints, in BuildingComponent buildingComponent, in RoofTag roofTag) =>
             {
                 //The list with triangles the method returns
                 List<int> triangles = new List<int>();
@@ -92,98 +93,99 @@ namespace FunkySheep.Earth.Buildings
                     triangles.Add(0);
                     triangles.Add(1);
                     triangles.Add(2);
-
-                    return;
-                }
-
-                //Step 1. Store the vertices in a list and we also need to know the next and prev vertex
-                List<Vertex> vertices = new List<Vertex>();
-
-                for (int i = 0; i < points.Count; i++)
+                } else
                 {
-                    vertices.Add(new Vertex(points[i]));
-                    vertices[i].index = i;
+                    //Step 1. Store the vertices in a list and we also need to know the next and prev vertex
+                    List<Vertex> vertices = new List<Vertex>();
 
-                    uvs.Add(new Vector3(
-                        (points[i].x - minPoint.x) / (maxPoint.x - minPoint.x),
-                        (points[i].y - minPoint.y) / (maxPoint.y - minPoint.y),
-                        0
-                    ));
-                }
-
-                //Find the next and previous vertex
-                for (int i = 0; i < vertices.Count; i++)
-                {
-                    int nextPos = ClampListIndex(i + 1, vertices.Count);
-
-                    int prevPos = ClampListIndex(i - 1, vertices.Count);
-
-                    vertices[i].prevVertex = vertices[prevPos];
-
-                    vertices[i].nextVertex = vertices[nextPos];
-                }
-
-
-
-                //Step 2. Find the reflex (concave) and convex vertices, and ear vertices
-                for (int i = 0; i < vertices.Count; i++)
-                {
-                    CheckIfReflexOrConvex(vertices[i]);
-                }
-
-                //Have to find the ears after we have found if the vertex is reflex or convex
-                List<Vertex> earVertices = new List<Vertex>();
-
-                for (int i = 0; i < vertices.Count; i++)
-                {
-                    IsVertexEar(vertices[i], vertices, earVertices);
-                }
-
-                //Step 3. Triangulate!
-                while (true)
-                {
-                    //This means we have just one triangle left
-                    if (vertices.Count == 3)
+                    for (int i = 0; i < points.Count; i++)
                     {
-                        //The final triangle
-                        triangles.Add(vertices[0].index);
-                        triangles.Add(vertices[0].prevVertex.index);
-                        triangles.Add(vertices[0].nextVertex.index);
-                        break;
+                        vertices.Add(new Vertex(points[i]));
+                        vertices[i].index = i;
+
+                        uvs.Add(new Vector3(
+                            (points[i].x - minPoint.x) / (maxPoint.x - minPoint.x),
+                            (points[i].y - minPoint.y) / (maxPoint.y - minPoint.y),
+                            0
+                        ));
                     }
 
-                    if (earVertices.Count == 0)
-                        break;
+                    //Find the next and previous vertex
+                    for (int i = 0; i < vertices.Count; i++)
+                    {
+                        int nextPos = ClampListIndex(i + 1, vertices.Count);
 
-                    //Make a triangle of the first ear
-                    Vertex earVertex = earVertices[0];
+                        int prevPos = ClampListIndex(i - 1, vertices.Count);
 
-                    Vertex earVertexPrev = earVertex.prevVertex;
-                    Vertex earVertexNext = earVertex.nextVertex;
+                        vertices[i].prevVertex = vertices[prevPos];
 
-                    triangles.Add(earVertex.index);
-                    triangles.Add(earVertexPrev.index);
-                    triangles.Add(earVertexNext.index);
+                        vertices[i].nextVertex = vertices[nextPos];
+                    }
 
-                    //Remove the vertex from the lists
-                    earVertices.Remove(earVertex);
 
-                    vertices.Remove(earVertex);
 
-                    //Update the previous vertex and next vertex
-                    earVertexPrev.nextVertex = earVertexNext;
-                    earVertexNext.prevVertex = earVertexPrev;
+                    //Step 2. Find the reflex (concave) and convex vertices, and ear vertices
+                    for (int i = 0; i < vertices.Count; i++)
+                    {
+                        CheckIfReflexOrConvex(vertices[i]);
+                    }
 
-                    //...see if we have found a new ear by investigating the two vertices that was part of the ear
-                    CheckIfReflexOrConvex(earVertexPrev);
-                    CheckIfReflexOrConvex(earVertexNext);
+                    //Have to find the ears after we have found if the vertex is reflex or convex
+                    List<Vertex> earVertices = new List<Vertex>();
 
-                    earVertices.Remove(earVertexPrev);
-                    earVertices.Remove(earVertexNext);
+                    for (int i = 0; i < vertices.Count; i++)
+                    {
+                        IsVertexEar(vertices[i], vertices, earVertices);
+                    }
+                    //Step 3. Triangulate!
+                    while (true)
+                    {
+                        //This means we have just one triangle left
+                        if (vertices.Count == 3)
+                        {
+                            //The final triangle
+                            triangles.Add(vertices[0].index);
+                            triangles.Add(vertices[0].prevVertex.index);
+                            triangles.Add(vertices[0].nextVertex.index);
+                            break;
+                        }
 
-                    IsVertexEar(earVertexPrev, vertices, earVertices);
-                    IsVertexEar(earVertexNext, vertices, earVertices);
+                        if (earVertices.Count == 0)
+                            break;
+
+                        //Make a triangle of the first ear
+                        Vertex earVertex = earVertices[0];
+
+                        Vertex earVertexPrev = earVertex.prevVertex;
+                        Vertex earVertexNext = earVertex.nextVertex;
+
+                        triangles.Add(earVertex.index);
+                        triangles.Add(earVertexPrev.index);
+                        triangles.Add(earVertexNext.index);
+
+                        //Remove the vertex from the lists
+                        earVertices.Remove(earVertex);
+
+                        vertices.Remove(earVertex);
+
+                        //Update the previous vertex and next vertex
+                        earVertexPrev.nextVertex = earVertexNext;
+                        earVertexNext.prevVertex = earVertexPrev;
+
+                        //...see if we have found a new ear by investigating the two vertices that was part of the ear
+                        CheckIfReflexOrConvex(earVertexPrev);
+                        CheckIfReflexOrConvex(earVertexNext);
+
+                        earVertices.Remove(earVertexPrev);
+                        earVertices.Remove(earVertexNext);
+
+                        IsVertexEar(earVertexPrev, vertices, earVertices);
+                        IsVertexEar(earVertexNext, vertices, earVertices);
+
+                        debugTriangles(triangles, points);
+                    }
                 }
+
 
                 triangles.Reverse();
                 //debugTriangles(triangles, points);
@@ -235,9 +237,9 @@ namespace FunkySheep.Earth.Buildings
         {
             for (int i = 0; i < triangles.Count; i+=3)
             {
-                UnityEngine.Debug.DrawLine(points[triangles[i]], points[triangles[i + 1]], Color.red, 10000);
-                UnityEngine.Debug.DrawLine(points[triangles[i + 1]], points[triangles[i + 2]], Color.red, 10000);
-                UnityEngine.Debug.DrawLine(points[triangles[i + 2]], points[triangles[i]], Color.red, 10000);
+                UnityEngine.Debug.DrawLine(points[triangles[i]], points[triangles[i + 1]], Color.red, 1);
+                UnityEngine.Debug.DrawLine(points[triangles[i + 1]], points[triangles[i + 2]], Color.red, 1);
+                UnityEngine.Debug.DrawLine(points[triangles[i + 2]], points[triangles[i]], Color.red, 1);
             }
         }
 

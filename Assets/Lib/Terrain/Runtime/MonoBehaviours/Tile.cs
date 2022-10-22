@@ -17,7 +17,6 @@ namespace FunkySheep.Earth.Terrain
     [RequireComponent(typeof(UnityEngine.TerrainCollider))]
     public class Tile : MonoBehaviour
     {
-        public Manager manager;
         public int2 gridPosition;
         public bool heightUpdated = false;
         UnityEngine.Terrain terrain;
@@ -27,7 +26,7 @@ namespace FunkySheep.Earth.Terrain
             terrain = GetComponent<UnityEngine.Terrain>();
             terrain.enabled = false;
             terrain.allowAutoConnect = true;
-            terrain.materialTemplate = Instantiate<Material>(manager.material);
+            terrain.materialTemplate = Instantiate<Material>(Manager.Instance.material);
 
             terrain.terrainData = new TerrainData();
             GetComponent<UnityEngine.TerrainCollider>().terrainData = terrain.terrainData;
@@ -54,7 +53,7 @@ namespace FunkySheep.Earth.Terrain
                 mapPosition.y.ToString()
             };
 
-            string url = manager.heightsUrl.Interpolate(values, variables);
+            string url = Manager.Instance.heightsUrl.Interpolate(values, variables);
 
             StartCoroutine(FunkySheep.Network.Downloader.DownloadTexture(url, (fileID, texture) =>
             {
@@ -91,8 +90,8 @@ namespace FunkySheep.Earth.Terrain
 
             terrain.enabled = true;
             heightUpdated = true;
-            if (manager.addedTileEvent)
-                manager.addedTileEvent.Raise(this);
+            if (Manager.Instance.addedTileEvent)
+                Manager.Instance.addedTileEvent.Raise(this);
             gameObject.AddComponent<Connector>();
         }
 
@@ -108,7 +107,7 @@ namespace FunkySheep.Earth.Terrain
                 mapPosition.y.ToString()
             };
 
-            string url = manager.diffuseUrl.Interpolate(values, variables);
+            string url = Manager.Instance.diffuseUrl.Interpolate(values, variables);
 
             StartCoroutine(FunkySheep.Network.Downloader.DownloadTexture(url, (fileID, texture) =>
             {

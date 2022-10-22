@@ -13,8 +13,6 @@ namespace FunkySheep.Earth
         public int zoomLevel = 15;
         public int2 mapPosition;
 
-        public Terrain.Manager terrainManager;
-
         public override void Awake()
         {
             base.Awake();
