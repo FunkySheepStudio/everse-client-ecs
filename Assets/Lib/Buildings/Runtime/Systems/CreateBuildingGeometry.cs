@@ -21,7 +21,7 @@ namespace FunkySheep.Earth.Buildings
                 // Set Points in clockwise order
                 points = SetClockWise(points);
 
-                float heightOffset = area / 4;
+                float heightOffset = area;
 
                 for (int i = 0; i < points.Length; i++)
                 {
