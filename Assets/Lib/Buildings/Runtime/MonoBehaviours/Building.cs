@@ -12,6 +12,7 @@ namespace FunkySheep.Earth.Buildings
     {
         public override void Bake(Building authoring)
         {
+            DependsOn(authoring.wall);
             AddComponent<BuildingPrefab>(
                 new BuildingPrefab
                 {

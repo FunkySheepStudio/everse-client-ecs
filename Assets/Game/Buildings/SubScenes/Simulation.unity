@@ -195,7 +195,7 @@ PrefabInstance:
         type: 3}
       propertyPath: wall
       value: 
-      objectReference: {fileID: 2949729264605374586, guid: 1abb303d73cab2c46a795694a4fedad8,
+      objectReference: {fileID: 3703485960664082772, guid: 0255d717062445d49961008ff17c2454,
         type: 3}
     - target: {fileID: 6096744211728423384, guid: 7c771ab4f42edec40b27c098612d7800,
         type: 3}
