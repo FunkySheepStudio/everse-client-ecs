@@ -15,6 +15,18 @@ namespace FunkySheep.Earth.Buildings
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref DynamicBuffer<Point> points, in BuildingComponent buildingComponent, in WallsTag wallsTag) =>
             {
                 float area = Area(points);
+                //Discard Colinear points;
+                for (int i = 0; i < points.Length; i++)
+                {
+                    float2 a = points[ClampListIndex(i - 1, points.Length)].GetPos2D_XZ();
+                    float2 b = points[i].GetPos2D_XZ();
+                    float2 c = points[ClampListIndex(i + 1, points.Length)].GetPos2D_XZ();
+
+                    if (Geometry.utils.IsCollinear(a, b, c))
+                        points.RemoveAt(i);
+                }
+
+
                 // Set the farest point as first one
                 points = SetFirstPoint(points, buildingComponent.center);
 
@@ -86,6 +98,15 @@ namespace FunkySheep.Earth.Buildings
 
         }
 
+        //Clamp list indices
+        //Will even work if index is larger/smaller than listSize, so can loop multiple times
+        public static int ClampListIndex(int index, int listSize)
+        {
+            index = ((index % listSize) + listSize) % listSize;
+
+            return index;
+        }
+
         /// <summary>
         /// Set the first point of the building (the farest from the center)
         /// </summary>
@@ -118,13 +139,9 @@ namespace FunkySheep.Earth.Buildings
         /// <returns></returns>
         public static DynamicBuffer<Point> SetClockWise(DynamicBuffer<Point> points)
         {
-            if (points.Length <= 2)
-            {
-                return points;
-            }
+            bool result = Geometry.utils.IsTriangleOrientedClockwise(points[points.Length - 1].GetPos2D_XZ(), points[0].GetPos2D_XZ(), points[1].GetPos2D_XZ());
 
-            int result = IsClockWise(points[1].Value, points[points.Length - 1].Value, points[0].Value);
-            if (result < 0)
+            if (result)
             {
                 NativeArray<Point> tempPoints = new NativeArray<Point>(points.Length, Allocator.Temp);
                 tempPoints.CopyFrom(points.AsNativeArray());
@@ -137,35 +154,6 @@ namespace FunkySheep.Earth.Buildings
             }
 
             return points;
-        }
-
-        /// <summary>
-        /// Check if two Vector2 are clockwise around the origin
-        /// </summary>
-        /// <param name="first">First Vector2</param>
-        /// <param name="second">Second Vector2</param>
-        /// <param name="origin">The Vector2 orgin to compare from</param>
-        /// <returns>Return 1 if clockwise, -1 if anticlockwise, 0 if aligned</returns>
-        public static int IsClockWise(float3 first, float3 second, float3 origin)
-        {
-            float3 firstOffset = origin - first;
-            float3 secondOffset = origin - second;
-
-            float angleOffset = UnityEngine.Vector3.SignedAngle(firstOffset, secondOffset, UnityEngine.Vector3.up);
-
-            if (angleOffset > 0)
-            {
-                return 1;
-            }
-            else if (angleOffset < 0)
-            {
-                return -1;
-            }
-            else
-            {
-                return 0;
-            }
-
         }
 
         /// <summary>

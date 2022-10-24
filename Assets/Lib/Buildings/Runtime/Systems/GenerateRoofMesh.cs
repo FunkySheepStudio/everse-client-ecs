@@ -72,11 +72,6 @@ namespace FunkySheep.Earth.Buildings
                         maxPoint = floatPoints[i].Value;
                 }
 
-                if (points.Count < 3)
-                {
-                    return;
-                }
-
                 //If we just have three points, then we dont have to do all calculations
                 if (points.Count == 3)
                 {
@@ -206,7 +201,7 @@ namespace FunkySheep.Earth.Buildings
             Vector2 b = v.GetPos2D_XZ();
             Vector2 c = v.nextVertex.GetPos2D_XZ();
 
-            if (!IsTriangleOrientedClockwise(a, b, c))
+            if (Geometry.utils.IsTriangleOrientedClockwise(a, b, c))
             {
                 v.isReflex = true;
             }
@@ -214,23 +209,6 @@ namespace FunkySheep.Earth.Buildings
             {
                 v.isConvex = true;
             }
-        }
-
-        //Is a triangle in 2d space oriented clockwise or counter-clockwise
-        //https://math.stackexchange.com/questions/1324179/how-to-tell-if-3-connected-points-are-connected-clockwise-or-counter-clockwise
-        //https://en.wikipedia.org/wiki/Curve_orientation
-        public static bool IsTriangleOrientedClockwise(float2 p1, float2 p2, float2 p3)
-        {
-            bool isClockWise = true;
-
-            float determinant = p1.x * p2.y + p3.x * p1.y + p2.x * p3.y - p1.x * p3.y - p3.x * p2.y - p2.x * p1.y;
-
-            if (determinant > 0f)
-            {
-                isClockWise = false;
-            }
-
-            return isClockWise;
         }
 
         //Check if a vertex is an ear

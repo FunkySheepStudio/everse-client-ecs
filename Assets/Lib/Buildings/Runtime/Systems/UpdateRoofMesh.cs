@@ -23,20 +23,12 @@ namespace FunkySheep.Earth.Buildings
         {
             Entities.ForEach((Entity entity, in DynamicBuffer<Uv> uvs, in DynamicBuffer<Triangle> triangles, in DynamicBuffer<Point> floatPoints, in BuildingComponent buildingComponent) =>
             {
-                NativeArray<Triangle> newTriangles = new NativeArray<Triangle>(triangles.Length, Allocator.Temp);
-
-                // reverse the array
-                for (int i = 0; i < triangles.Length; i++)
-                {
-                    newTriangles[triangles.Length - 1 - i] = triangles[i];
-                }
-
                 Mesh mesh = new Mesh();
                 var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
                 mesh.indexFormat = IndexFormat.UInt32;
                 mesh.Clear();
                 mesh.SetVertices(floatPoints.Reinterpret<Vector3>().AsNativeArray());
-                mesh.SetIndices(newTriangles, MeshTopology.Triangles, 0);
+                mesh.SetIndices(triangles.AsNativeArray(), MeshTopology.Triangles, 0);
                 mesh.SetUVs(0, uvs.AsNativeArray());
                 mesh.RecalculateNormals();
 
@@ -69,10 +61,8 @@ namespace FunkySheep.Earth.Buildings
 
                 entityManager.RemoveComponent<Uv>(entity);
                 entityManager.RemoveComponent<Triangle>(entity);
-                newTriangles.Dispose();
             })
             .WithStructuralChanges()
-            .WithoutBurst()
             .Run();
         }
 
