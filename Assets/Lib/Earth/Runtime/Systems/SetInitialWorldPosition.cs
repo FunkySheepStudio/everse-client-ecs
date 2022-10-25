@@ -30,7 +30,6 @@ namespace FunkySheep.Earth
                 };
 
                 buffer.RemoveComponent<MapPosition>(entity);
-                buffer.RemoveComponent<TileSize>(entity);
                 buffer.AddSharedComponent<GridPosition>(entity, gridPosition);
             })
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
