@@ -5,6 +5,16 @@ namespace FunkySheep.Maps
 {
     public partial class SetInitialMapPosition : SystemBase
     {
+        EntityQuery query;
+        protected override void OnCreate()
+        {
+            query = EntityManager.CreateEntityQuery(
+                ComponentType.ReadOnly<MapPosition>(),
+                ComponentType.Exclude<InitialMapPosition>()
+                );
+            RequireForUpdate(query);
+        }
+
         protected override void OnUpdate()
         {
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in MapPosition mapPosition) =>

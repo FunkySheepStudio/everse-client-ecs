@@ -7,6 +7,17 @@ namespace FunkySheep.Maps
 {
     public partial class CalculateTileSize : SystemBase
     {
+        EntityQuery query;
+        protected override void OnCreate()
+        {
+            query = EntityManager.CreateEntityQuery(
+                ComponentType.ReadOnly<GPSCoordinates>(),
+                ComponentType.ReadOnly<ZoomLevel>(),
+                ComponentType.Exclude<TileSize>()
+                );
+            RequireForUpdate(query);
+        }
+
         protected override void OnUpdate()
         {
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in GPSCoordinates gPSCoordinates, in ZoomLevel zoomLevel) =>
@@ -28,4 +39,5 @@ namespace FunkySheep.Maps
             .Run();
         }
     }
+
 }

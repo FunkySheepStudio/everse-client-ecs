@@ -29,9 +29,9 @@ namespace FunkySheep.Earth
                     }
                 };
 
-                buffer.RemoveComponent<MapPosition>(entity);
                 buffer.AddSharedComponent<GridPosition>(entity, gridPosition);
             })
+            .WithNone<GridPosition>()
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .WithoutBurst()
             .Run();

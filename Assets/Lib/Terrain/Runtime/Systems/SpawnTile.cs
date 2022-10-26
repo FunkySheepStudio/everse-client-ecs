@@ -1,5 +1,6 @@
 using Unity.Entities;
 using FunkySheep.Earth;
+using FunkySheep.Maps;
 using Unity.Collections;
 
 namespace FunkySheep.Terrain
@@ -20,7 +21,7 @@ namespace FunkySheep.Terrain
         }
         protected override void OnUpdate()
         {
-            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in GridPosition gridPosition, in SpawnerTag spawnerTag) =>
+            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in GridPosition gridPosition, in MapPosition mapPosition, in TileSize tileSize, in SpawnerTag spawnerTag) =>
             {
                 DynamicBuffer<Tile> tiles = entityManager.GetBuffer<Tile>(terrainEntity, false);
                 for (int i = 0; i < tiles.Length; i++)
@@ -39,6 +40,8 @@ namespace FunkySheep.Terrain
                 Entity tileEntity = buffer.CreateEntity();
                 buffer.SetName(tileEntity, new FixedString64Bytes("Terrain - Tile - " + gridPosition.Value.ToString()));
                 buffer.AddSharedComponent<GridPosition>(tileEntity, gridPosition);
+                buffer.AddComponent<TileSize>(tileEntity, tileSize);
+                buffer.AddComponent<MapPosition>(tileEntity, mapPosition);
             })
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .WithoutBurst()
