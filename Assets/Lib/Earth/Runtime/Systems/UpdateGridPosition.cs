@@ -20,7 +20,10 @@ namespace FunkySheep.Earth
                     }
                 };
 
-                buffer.SetSharedComponent<GridPosition>(entity, newGridPosition);
+                if (!newGridPosition.Equals(gridPosition))
+                {
+                    buffer.SetSharedComponent<GridPosition>(entity, newGridPosition);
+                }
 
             })
             .WithDeferredPlaybackSystem<EndInitializationEntityCommandBufferSystem>()

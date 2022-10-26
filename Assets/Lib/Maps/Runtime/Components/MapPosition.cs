@@ -1,6 +1,5 @@
 using Unity.Entities;
 using Unity.Mathematics;
-using static UnityEngine.Rendering.DebugUI;
 
 namespace FunkySheep.Maps
 {

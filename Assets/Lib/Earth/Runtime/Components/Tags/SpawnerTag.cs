@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace FunkySheep.Terrain
+namespace FunkySheep.Earth
 {
     public struct SpawnerTag : IComponentData
     {
