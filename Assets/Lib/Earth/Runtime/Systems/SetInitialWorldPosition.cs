@@ -24,8 +24,8 @@ namespace FunkySheep.Earth
                 {
                     Value = new int2
                     {
-                        x = (int)(localToWorldTransform.Value.Position.x / tileSize.value),
-                        y = (int)(localToWorldTransform.Value.Position.z / tileSize.value)
+                        x = (int)math.floor((localToWorldTransform.Value.Position.x / tileSize.value)),
+                        y = (int)math.floor((localToWorldTransform.Value.Position.z / tileSize.value))
                     }
                 };
 
