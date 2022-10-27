@@ -5,16 +5,6 @@ namespace FunkySheep.Maps
 {
     public partial class SetInitialMapPosition : SystemBase
     {
-        EntityQuery query;
-        protected override void OnCreate()
-        {
-            query = EntityManager.CreateEntityQuery(
-                ComponentType.ReadOnly<MapPosition>(),
-                ComponentType.Exclude<InitialMapPosition>()
-                );
-            RequireForUpdate(query);
-        }
-
         protected override void OnUpdate()
         {
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in MapPosition mapPosition) =>
@@ -31,11 +21,9 @@ namespace FunkySheep.Maps
                     Entity InitialMapSingleton = buffer.CreateEntity();
                     buffer.SetName(InitialMapSingleton, new FixedString32Bytes("InitialMap"));
                     buffer.AddComponent<InitialMapPosition>(InitialMapSingleton, initialMapPosition);
+                    Enabled = false;
                 }
-
-                buffer.AddComponent<InitialMapPosition>(entity, initialMapPosition);
             })
-            .WithNone<InitialMapPosition>()
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .WithoutBurst()
             .Run();

@@ -11,16 +11,18 @@ namespace FunkySheep.Maps
         protected override void OnCreate()
         {
             query = EntityManager.CreateEntityQuery(
-                ComponentType.ReadOnly<GPSCoordinates>(),
-                ComponentType.ReadOnly<ZoomLevel>(),
-                ComponentType.Exclude<TileSize>()
-                );
+                ComponentType.ReadOnly<GPSCoordinates>()
+            );
             RequireForUpdate(query);
         }
 
         protected override void OnUpdate()
         {
-            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in GPSCoordinates gPSCoordinates, in ZoomLevel zoomLevel) =>
+            ZoomLevel zoomLevel;
+            if (!TryGetSingleton<ZoomLevel>(out zoomLevel))
+                return;
+
+            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in GPSCoordinates gPSCoordinates) =>
             {
                 TileSize tileSize = new TileSize { };
                 if (!TryGetSingleton<TileSize>(out tileSize))
@@ -29,10 +31,8 @@ namespace FunkySheep.Maps
                     Entity tileSizeEntity = buffer.CreateEntity();
                     buffer.SetName(tileSizeEntity, new FixedString32Bytes("TileSize"));
                     buffer.AddComponent<TileSize>(tileSizeEntity, tileSize);
+                    Enabled = false;
                 }
-
-                buffer.AddComponent<TileSize>(entity, tileSize);
-                buffer.RemoveComponent<ZoomLevel>(entity);
             })
             .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
             .WithoutBurst()

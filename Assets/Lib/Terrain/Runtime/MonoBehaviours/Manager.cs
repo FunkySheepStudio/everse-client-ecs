@@ -1,68 +1,121 @@
 using Unity.Mathematics;
 using UnityEngine;
-using System.Collections.Generic;
 using Unity.Burst;
+using System;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections;
+using Unity.Jobs;
+using FunkySheep.Types;
+using FunkySheep.Maps;
+using FunkySheep.Earth;
+using Unity.Entities;
+using Unity.Transforms;
+using UnityEngine.Rendering;
+using System.Security.Cryptography;
 
-namespace FunkySheep.Earth.Terrain
+namespace FunkySheep.Terrain
 {
-    [AddComponentMenu("FunkySheep/Earth/Terrain/Manager")]
-    public class Manager : FunkySheep.Types.Singleton<Manager>
+    [AddComponentMenu("FunkySheep/Terrain/Manager")]
+    public class Manager : Singleton<Manager>
     {
         public Material material;
         public FunkySheep.Types.String heightsUrl;
         public FunkySheep.Types.String diffuseUrl;
-        public AddedTileEvent addedTileEvent;
+        EntityManager entityManager;
 
-        UnityEngine.Terrain terrain;
-        List<int2> tiles = new List<int2>();
-
-        public void AddTile(int2 gridPosition)
+        public override void Awake()
         {
-            if (!tiles.Contains(gridPosition))
+            base.Awake();
+            entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        }
+
+        public void DownloadHeights(Entity entity, ZoomLevel zoomLevel, TileSize tileSize)
+        {
+            string[] variables = new string[3] { "zoom", "position.x", "position.y" };
+
+            string[] values = new string[3] {
+                zoomLevel.Value.ToString(),
+                entityManager.GetComponentData<MapPosition>(entity).Value.x.ToString(),
+                entityManager.GetComponentData<MapPosition>(entity).Value.y.ToString()
+            };
+
+            string url = heightsUrl.Interpolate(values, variables);
+
+            StartCoroutine(FunkySheep.Network.Downloader.DownloadTexture(url, (fileID, texture) =>
             {
-                tiles.Add(gridPosition);
-                GameObject tileGo = new GameObject();
-                tileGo.SetActive(false);
-                tileGo.name = $"Tile {gridPosition.x} : {gridPosition.y}";
-                tileGo.transform.parent = transform;
-                Tile tile = tileGo.AddComponent<Tile>();
-                tile.gridPosition = gridPosition;
-                tileGo.SetActive(true);
-            }
+                ProcessHeights(entity, texture, tileSize);
+            }));
+        }
+
+        public void ProcessHeights(Entity entity, Texture2D texture, TileSize tileSize)
+        {
+            NativeArray<Byte> bytes = texture.GetRawTextureData<Byte>();
+
+            EndSimulationEntityCommandBufferSystem m_EndSimulationEcbSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
+
+            var setHeightsFromTextureJob = new SetHeightsFromTextureJob
+            {
+                count = (int)(bytes.Length / 4),
+                borderCount = (int)math.sqrt(bytes.Length / 4),
+                tileSize = tileSize,
+                uniformScale = entityManager.GetComponentData<LocalToWorldTransform>(entity).Value,
+                ecb = m_EndSimulationEcbSystem.CreateCommandBuffer().AsParallelWriter(),
+                bytes = bytes
+            };
+            setHeightsFromTextureJob.Schedule(bytes.Length / 4, 64).Complete();
+        }
+
+        void DownloadDiffuse(MapPosition mapPosition, ZoomLevel zoomLevel)
+        {
+            string[] variables = new string[3] { "zoom", "position.x", "position.y" };
+
+            string[] values = new string[3] {
+                zoomLevel.Value.ToString(),
+                mapPosition.Value.x.ToString(),
+                mapPosition.Value.y.ToString()
+            };
+
+            string url = Manager.Instance.diffuseUrl.Interpolate(values, variables);
+
+            StartCoroutine(FunkySheep.Network.Downloader.DownloadTexture(url, (fileID, texture) =>
+            {
+                ProcessDiffuse(texture);
+            }));
+        }
+
+        public void ProcessDiffuse(Texture2D texture)
+        {
         }
 
         [BurstCompile]
-        public static float? GetHeight(float3 position)
+        struct SetHeightsFromTextureJob : IJobParallelFor
         {
-            foreach (UnityEngine.Terrain terrain in UnityEngine.Terrain.activeTerrains)
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
+            public NativeArray<Byte> bytes;
+            public UniformScaleTransform uniformScale;
+            public TileSize tileSize;
+            public int borderCount;
+            public int count;
+            public EntityCommandBuffer.ParallelWriter ecb;
+
+            public void Execute(int i)
             {
-                UnityEngine.Bounds bounds = terrain.terrainData.bounds;
-                Vector2 terrainMin = new Vector2(
-                  bounds.min.x + terrain.transform.position.x,
-                  bounds.min.z + terrain.transform.position.z
-                );
-
-                Vector2 terrainMax = new Vector2(
-                  bounds.max.x + terrain.transform.position.x,
-                  bounds.max.z + terrain.transform.position.z
-                );
-
-                if (position.x >= terrainMin.x && position.z >= terrainMin.y && position.x <= terrainMax.x && position.z <= terrainMax.y)
+                Entity entity = ecb.CreateEntity(i);
+                ecb.AddComponent<LocalToWorldTransform>(i, entity, new LocalToWorldTransform
                 {
-                    if (terrain.GetComponent<Tile>().heightUpdated == true)
+                    Value = new UniformScaleTransform
                     {
-                        return terrain.terrainData.GetInterpolatedHeight(
-                          (position.x - terrainMin.x) / (terrainMax.x - terrainMin.x),
-                          (position.z - terrainMin.y) / (terrainMax.y - terrainMin.y)
-                        );
+                        Scale = uniformScale.Scale,
+                        Position = new float3
+                        {
+                            x = uniformScale.Position.x + (int)math.floor(i / borderCount) * (tileSize.value / borderCount),
+                            y = (math.floor(bytes[(i * 4) + 1] * 256.0f) + math.floor(bytes[(i * 4) + 2]) + bytes[(i * 4) + 3] / 256) - 32768.0f,
+                            z = uniformScale.Position.z + (i % borderCount) * (tileSize.value / borderCount)
+                        }
                     }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                });
             }
-            return null;
         }
     }
 }

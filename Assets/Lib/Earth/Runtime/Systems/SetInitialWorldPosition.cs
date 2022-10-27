@@ -7,10 +7,29 @@ namespace FunkySheep.Earth
 {
     public partial class SetInitialWorldPosition : SystemBase
     {
+        protected override void OnCreate()
+        {
+            EntityQuery query = EntityManager.CreateEntityQuery(
+                ComponentType.ReadWrite<LocalToWorldTransform>(),
+                ComponentType.ReadOnly<MapPosition>(),
+                ComponentType.Exclude<GridPosition>()
+                );
+            RequireForUpdate(query);
+        }
+
         protected override void OnUpdate()
         {
-            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref LocalToWorldTransform localToWorldTransform, in MapPosition mapPosition, in InitialMapPosition initialMapPosition, in TileSize tileSize) =>
+            Entities.ForEach((Entity entity, EntityCommandBuffer buffer, ref LocalToWorldTransform localToWorldTransform, in MapPosition mapPosition) =>
             {
+                InitialMapPosition initialMapPosition;
+                if (!TryGetSingleton<InitialMapPosition>(out initialMapPosition))
+                    return;
+
+                TileSize tileSize;
+                if (!TryGetSingleton<TileSize>(out tileSize))
+                    return;
+
+
                 float2 mapOffset = mapPosition.Value - initialMapPosition.Value;
 
                 localToWorldTransform.Value.Position = new Unity.Mathematics.float3

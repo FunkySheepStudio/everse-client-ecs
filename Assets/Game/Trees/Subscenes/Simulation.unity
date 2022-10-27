@@ -154,10 +154,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gPSCoordinates:
     Value:
-      x: 44.62063
-      y: 4.390154
-  zoomLevel:
-    Value: 15
+      x: 44.620692
+      y: 4.389994
 --- !u!4 &2072215382
 Transform:
   m_ObjectHideFlags: 0
