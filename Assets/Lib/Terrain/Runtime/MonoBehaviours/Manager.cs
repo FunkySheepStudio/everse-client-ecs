@@ -117,6 +117,10 @@ namespace FunkySheep.Terrain
                     }
                 });
 
+                ecb.AddComponent<Lod0Tag>(i, entity);
+                ecb.AddComponent<Lod1Tag>(i, entity);
+                ecb.AddComponent<Lod2Tag>(i, entity);
+
                 int debugGridSize = 1;
 
                 if (i% debugGridSize == 0 && (int)math.floor(i / borderCount)% debugGridSize == 0)
