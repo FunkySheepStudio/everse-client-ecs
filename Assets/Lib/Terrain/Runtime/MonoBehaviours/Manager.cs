@@ -116,9 +116,11 @@ namespace FunkySheep.Terrain
                         Position = position
                     }
                 });
-
-                ecb.AddComponent<DebugTag>(i, entity);
-                ecb.SetComponentEnabled<DebugTag>(i, entity, true);
+                if (i%8 == 0 && (int)math.floor(i / borderCount)%8 == 0)
+                {
+                    ecb.AddComponent<DebugTag>(i, entity);
+                    ecb.SetComponentEnabled<DebugTag>(i, entity, true);
+                }
             }
         }
     }

@@ -15,7 +15,7 @@ namespace FunkySheep.Terrain
         {
             Entities.ForEach((Entity entity, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag) =>
             {
-                Gizmos.DrawCube(localToWorldTransform.Value.Position, Vector3.one);
+                Gizmos.DrawCube(localToWorldTransform.Value.Position, Vector3.one * 8);
             })
             .WithoutBurst()
             .Run();
