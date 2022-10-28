@@ -19,11 +19,19 @@ namespace FunkySheep.Terrain
         public FunkySheep.Types.String heightsUrl;
         public FunkySheep.Types.String diffuseUrl;
         EntityManager entityManager;
+        EntityArchetype archetype;
 
         public override void Awake()
         {
             base.Awake();
             entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            archetype = entityManager.CreateArchetype(
+                typeof(LocalToWorldTransform),
+                typeof(DebugTag),
+                typeof(Lod0Tag),
+                typeof(Lod1Tag),
+                typeof(Lod2Tag)
+            );
         }
 
         public void DownloadHeights(Entity entity, ZoomLevel zoomLevel, TileSize tileSize)
@@ -47,7 +55,7 @@ namespace FunkySheep.Terrain
         public void ProcessHeights(Entity entity, Texture2D texture, TileSize tileSize)
         {
             NativeArray<Byte> bytes = texture.GetRawTextureData<Byte>();
-
+            NativeArray<Entity> entities = entityManager.CreateEntity(archetype, bytes.Length, Allocator.Persistent);
             EndSimulationEntityCommandBufferSystem m_EndSimulationEcbSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
 
             var setHeightsFromTextureJob = new SetHeightsFromTextureJob
@@ -57,7 +65,8 @@ namespace FunkySheep.Terrain
                 tileSize = tileSize,
                 uniformScale = entityManager.GetComponentData<LocalToWorldTransform>(entity).Value,
                 ecb = m_EndSimulationEcbSystem.CreateCommandBuffer().AsParallelWriter(),
-                bytes = bytes
+                bytes = bytes,
+                entities = entities
             };
             setHeightsFromTextureJob.Schedule(bytes.Length / 4, 64).Complete();
         }
@@ -95,11 +104,10 @@ namespace FunkySheep.Terrain
             public int borderCount;
             public int count;
             public EntityCommandBuffer.ParallelWriter ecb;
+            public NativeArray<Entity> entities;
 
             public void Execute(int i)
             {
-                Entity entity = ecb.CreateEntity(i);
-
                 float3 position = new float3
                 {
                     x = uniformScale.Position.x + (i % borderCount) * (tileSize.value / borderCount),
@@ -108,7 +116,7 @@ namespace FunkySheep.Terrain
                     
                 };
 
-                ecb.AddComponent<LocalToWorldTransform>(i, entity, new LocalToWorldTransform
+                ecb.SetComponent<LocalToWorldTransform>(i, entities[i], new LocalToWorldTransform
                 {
                     Value = new UniformScaleTransform
                     {
@@ -117,16 +125,11 @@ namespace FunkySheep.Terrain
                     }
                 });
 
-                ecb.AddComponent<Lod0Tag>(i, entity);
-                ecb.AddComponent<Lod1Tag>(i, entity);
-                ecb.AddComponent<Lod2Tag>(i, entity);
-
                 int debugGridSize = 1;
 
                 if (i% debugGridSize == 0 && (int)math.floor(i / borderCount)% debugGridSize == 0)
                 {
-                    ecb.AddComponent<DebugTag>(i, entity);
-                    ecb.SetComponentEnabled<DebugTag>(i, entity, true);
+                    ecb.SetComponentEnabled<DebugTag>(i, entities[i], true);
                 }
             }
         }
