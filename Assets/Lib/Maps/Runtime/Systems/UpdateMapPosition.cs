@@ -17,7 +17,7 @@ namespace FunkySheep.Maps
                 mapPosition.Value = new float2
                 {
                     x = initialMapPosition.Value.x + gridPosition.Value.x,
-                    y = initialMapPosition.Value.y - gridPosition.Value.y,
+                    y = initialMapPosition.Value.y - gridPosition.Value.y, // Since mercator position are inverted
                 };
             })
             .WithoutBurst()

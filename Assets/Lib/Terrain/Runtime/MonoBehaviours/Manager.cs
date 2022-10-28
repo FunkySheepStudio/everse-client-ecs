@@ -7,11 +7,8 @@ using Unity.Collections;
 using Unity.Jobs;
 using FunkySheep.Types;
 using FunkySheep.Maps;
-using FunkySheep.Earth;
 using Unity.Entities;
 using Unity.Transforms;
-using UnityEngine.Rendering;
-using System.Security.Cryptography;
 
 namespace FunkySheep.Terrain
 {
@@ -102,19 +99,26 @@ namespace FunkySheep.Terrain
             public void Execute(int i)
             {
                 Entity entity = ecb.CreateEntity(i);
+
+                float3 position = new float3
+                {
+                    x = uniformScale.Position.x + (i % borderCount) * (tileSize.value / borderCount),
+                    y = (math.floor(bytes[(i * 4) + 1] * 256.0f) + math.floor(bytes[(i * 4) + 2]) + bytes[(i * 4) + 3] / 256) - 32768.0f,
+                    z = uniformScale.Position.z + (int)math.floor(i / borderCount) * (tileSize.value / borderCount)
+                    
+                };
+
                 ecb.AddComponent<LocalToWorldTransform>(i, entity, new LocalToWorldTransform
                 {
                     Value = new UniformScaleTransform
                     {
                         Scale = uniformScale.Scale,
-                        Position = new float3
-                        {
-                            x = uniformScale.Position.x + (int)math.floor(i / borderCount) * (tileSize.value / borderCount),
-                            y = (math.floor(bytes[(i * 4) + 1] * 256.0f) + math.floor(bytes[(i * 4) + 2]) + bytes[(i * 4) + 3] / 256) - 32768.0f,
-                            z = uniformScale.Position.z + (i % borderCount) * (tileSize.value / borderCount)
-                        }
+                        Position = position
                     }
                 });
+
+                ecb.AddComponent<DebugTag>(i, entity);
+                ecb.SetComponentEnabled<DebugTag>(i, entity, true);
             }
         }
     }
