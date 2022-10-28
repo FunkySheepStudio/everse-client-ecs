@@ -103,7 +103,7 @@ namespace FunkySheep.Terrain
                 float3 position = new float3
                 {
                     x = uniformScale.Position.x + (i % borderCount) * (tileSize.value / borderCount),
-                    y = (math.floor(bytes[(i * 4) + 1] * 256.0f) + math.floor(bytes[(i * 4) + 2]) + bytes[(i * 4) + 3] / 256) - 32768.0f,
+                    y = (math.floor(bytes[(i * 4) + 1] * 256.0f) + math.floor(bytes[(i * 4) + 2]) + (float)bytes[(i * 4) + 3] / 256f) - 32768.0f,
                     z = uniformScale.Position.z + (int)math.floor(i / borderCount) * (tileSize.value / borderCount)
                     
                 };
@@ -116,7 +116,10 @@ namespace FunkySheep.Terrain
                         Position = position
                     }
                 });
-                if (i%8 == 0 && (int)math.floor(i / borderCount)%8 == 0)
+
+                int debugGridSize = 1;
+
+                if (i% debugGridSize == 0 && (int)math.floor(i / borderCount)% debugGridSize == 0)
                 {
                     ecb.AddComponent<DebugTag>(i, entity);
                     ecb.SetComponentEnabled<DebugTag>(i, entity, true);

@@ -38,7 +38,7 @@ namespace FunkySheep.Terrain
                 {
                     Gizmos.color = Color.blue;
                 }
-                Gizmos.DrawCube(localToWorldTransform.Value.Position, Vector3.one * 8);
+                Gizmos.DrawCube(localToWorldTransform.Value.Position, Vector3.one * 1);
             })
             .WithoutBurst()
             .Run();
