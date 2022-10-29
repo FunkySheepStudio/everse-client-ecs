@@ -18,6 +18,7 @@ namespace FunkySheep.Terrain
         public Material material;
         public FunkySheep.Types.String heightsUrl;
         public FunkySheep.Types.String diffuseUrl;
+        public int borderCount;
         EntityManager entityManager;
         EntityArchetype archetype;
 
@@ -30,7 +31,8 @@ namespace FunkySheep.Terrain
                 typeof(DebugTag),
                 typeof(Lod0Tag),
                 typeof(Lod1Tag),
-                typeof(Lod2Tag)
+                typeof(Lod2Tag),
+                typeof(LodBorder)
             );
         }
 
@@ -58,17 +60,18 @@ namespace FunkySheep.Terrain
             NativeArray<Entity> entities = entityManager.CreateEntity(archetype, bytes.Length, Allocator.Persistent);
             EndSimulationEntityCommandBufferSystem m_EndSimulationEcbSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
 
+            borderCount = (int)math.sqrt(bytes.Length / 4);
             var setHeightsFromTextureJob = new SetHeightsFromTextureJob
             {
                 count = (int)(bytes.Length / 4),
-                borderCount = (int)math.sqrt(bytes.Length / 4),
+                borderCount = borderCount,
                 tileSize = tileSize,
                 uniformScale = entityManager.GetComponentData<LocalToWorldTransform>(entity).Value,
                 ecb = m_EndSimulationEcbSystem.CreateCommandBuffer().AsParallelWriter(),
                 bytes = bytes,
                 entities = entities
             };
-            setHeightsFromTextureJob.Schedule(bytes.Length / 4, 64).Complete();
+            setHeightsFromTextureJob.Schedule(bytes.Length / 4, bytes.Length).Complete();
         }
 
         void DownloadDiffuse(MapPosition mapPosition, ZoomLevel zoomLevel)
@@ -108,6 +111,7 @@ namespace FunkySheep.Terrain
 
             public void Execute(int i)
             {
+                // Set position
                 float3 position = new float3
                 {
                     x = uniformScale.Position.x + (i % borderCount) * (tileSize.value / borderCount),
@@ -116,6 +120,7 @@ namespace FunkySheep.Terrain
                     
                 };
 
+                // Set neightbours
                 ecb.SetComponent<LocalToWorldTransform>(i, entities[i], new LocalToWorldTransform
                 {
                     Value = new UniformScaleTransform
@@ -125,12 +130,43 @@ namespace FunkySheep.Terrain
                     }
                 });
 
-                int debugGridSize = 1;
-
-                if (i% debugGridSize == 0 && (int)math.floor(i / borderCount)% debugGridSize == 0)
+                if ((int)math.floor(i / borderCount) < borderCount - 1)
                 {
-                    ecb.SetComponentEnabled<DebugTag>(i, entities[i], true);
+                    ecb.AddComponent<TopEntity>(i, entities[i], new TopEntity
+                    {
+                        Value = entities[i + borderCount]
+                    });
                 }
+
+                if ((int)math.floor(i / borderCount) != 0)
+                {
+                    ecb.AddComponent<BottomEntity>(i, entities[i], new BottomEntity
+                    {
+                        Value = entities[i - borderCount]
+                    });
+                }
+
+                if ((i % borderCount) != borderCount - 1)
+                {
+                    ecb.AddComponent<RightEntity>(i, entities[i], new RightEntity
+                    {
+                        Value = entities[i + 1]
+                    });
+                }
+
+                if ((i % borderCount) != 0)
+                {
+                    ecb.AddComponent<LeftEntity>(i, entities[i], new LeftEntity
+                    {
+                        Value = entities[i - 1]
+                    });
+                }
+
+                ecb.SetComponentEnabled<Lod0Tag>(i, entities[i], false);
+                ecb.SetComponentEnabled<Lod1Tag>(i, entities[i], false);
+                ecb.SetComponentEnabled<Lod2Tag>(i, entities[i], false);
+                ecb.SetComponentEnabled<LodBorder>(i, entities[i], false);
+                ecb.SetComponentEnabled<DebugTag>(i, entities[i], true);
             }
         }
     }

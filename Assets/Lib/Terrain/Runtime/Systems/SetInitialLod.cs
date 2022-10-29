@@ -2,7 +2,8 @@ using FunkySheep.Earth;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
-
+using FunkySheep.Maps;
+using Unity.Mathematics;
 
 namespace FunkySheep.Terrain
 {
@@ -10,9 +11,20 @@ namespace FunkySheep.Terrain
     {
         protected override void OnUpdate()
         {
-            Entity player = GetSingletonEntity<SpawnerTag>();
+            Entity player;
+            if (!TryGetSingletonEntity<SpawnerTag>(out player))
+                return;
+
             LocalToWorldTransform playerPosition;
-            GetComponentLookup<LocalToWorldTransform>().TryGetComponent(player, out playerPosition);
+            if (!GetComponentLookup<LocalToWorldTransform>().TryGetComponent(player, out playerPosition))
+                return;
+
+            TileSize tileSize;
+            if (!TryGetSingleton<TileSize>(out tileSize))
+                return;
+
+            float stepDistance = tileSize.value / Manager.Instance.borderCount;
+            float borderValue = math.sqrt(stepDistance * stepDistance);
 
             Entities.ForEach((Entity entity, EntityCommandBuffer buffer, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag) =>
             {
@@ -33,11 +45,16 @@ namespace FunkySheep.Terrain
                     buffer.SetComponentEnabled<Lod0Tag>(entity, true);
                     buffer.SetComponentEnabled<Lod1Tag>(entity, false);
                     buffer.SetComponentEnabled<Lod2Tag>(entity, false);
+                    if (distance > 100 - borderValue)
+                        buffer.SetComponentEnabled<LodBorder>(entity, true);
+
                 } else if (distance < 500)
                 {
                     buffer.SetComponentEnabled<Lod1Tag>(entity, true);
                     buffer.SetComponentEnabled<Lod0Tag>(entity, false);
                     buffer.SetComponentEnabled<Lod2Tag>(entity, false);
+                    if (distance > 500 - borderValue)
+                        buffer.SetComponentEnabled<LodBorder>(entity, true);
                 } else
                 {
                     buffer.SetComponentEnabled<Lod2Tag>(entity, true);
@@ -45,8 +62,11 @@ namespace FunkySheep.Terrain
                     buffer.SetComponentEnabled<Lod1Tag>(entity, false);
                 }
             })
-            .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
-            .ScheduleParallel();
+                .WithNone<Lod0Tag>()
+                .WithNone<Lod1Tag>()
+                .WithNone<Lod2Tag>()
+                .WithDeferredPlaybackSystem<EndSimulationEntityCommandBufferSystem>()
+                .ScheduleParallel();
 
         }
     }

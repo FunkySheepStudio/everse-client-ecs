@@ -15,11 +15,7 @@ namespace FunkySheep.Terrain
         }
         public void OnDrawGizmos()
         {
-            Entity player = GetSingletonEntity<SpawnerTag>();
-            LocalToWorldTransform playerPosition;
-            GetComponentLookup<LocalToWorldTransform>().TryGetComponent(player,out playerPosition);
-
-            Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in Lod0Tag lod0Tag) =>
+            /*Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in Lod0Tag lod0Tag) =>
             {
                 if (entity.Index%4 != 0 || (int)math.floor(entity.Index / 256)% 4 != 0)
                     return;
@@ -45,6 +41,62 @@ namespace FunkySheep.Terrain
                     return;
                 Gizmos.color = Color.blue;
                 Gizmos.DrawCube(localToWorldTransform.Value.Position, Vector3.one * 20);
+            })
+            .WithoutBurst()
+            .Run();*/
+
+            /*Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in TopEntity topEntity) =>
+            {
+                LocalToWorldTransform topEntityPosition;
+                if (!GetComponentLookup<LocalToWorldTransform>(true).TryGetComponent(topEntity.Value, out topEntityPosition))
+                    return;
+
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(localToWorldTransform.Value.Position, topEntityPosition.Value.Position);
+            })
+            .WithoutBurst()
+            .Run();
+
+            Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in BottomEntity bottomEntity) =>
+            {
+                LocalToWorldTransform bottomEntityPosition;
+                if (!GetComponentLookup<LocalToWorldTransform>(true).TryGetComponent(bottomEntity.Value, out bottomEntityPosition))
+                    return;
+
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(localToWorldTransform.Value.Position, bottomEntityPosition.Value.Position);
+            })
+            .WithoutBurst()
+            .Run();
+
+            Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in RightEntity rightEntity) =>
+            {
+                LocalToWorldTransform rightEntityPosition;
+                if (!GetComponentLookup<LocalToWorldTransform>(true).TryGetComponent(rightEntity.Value, out rightEntityPosition))
+                    return;
+
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(localToWorldTransform.Value.Position, rightEntityPosition.Value.Position);
+            })
+            .WithoutBurst()
+            .Run();
+
+            Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in LeftEntity leftEntity) =>
+            {
+                LocalToWorldTransform leftEntityPosition;
+                if (!GetComponentLookup<LocalToWorldTransform>(true).TryGetComponent(leftEntity.Value, out leftEntityPosition))
+                    return;
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(localToWorldTransform.Value.Position, leftEntityPosition.Value.Position);
+            })
+            .WithoutBurst()
+            .Run();*/
+
+            Entities.ForEach((Entity entity, int entityInQueryIndex, in LocalToWorldTransform localToWorldTransform, in DebugTag debugTag, in LodBorder lodBorder) =>
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawCube(localToWorldTransform.Value.Position, Vector3.one * 2);
             })
             .WithoutBurst()
             .Run();
